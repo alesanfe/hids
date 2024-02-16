@@ -1,6 +1,6 @@
 name: "📄🆕 Solicitud de Creación de Documento"
 description: "Envía tu solicitud para la creación de un nuevo documento."
-title: "[documentation] "
+title: "[Documentation] "
 labels: ["documentation"]
 body:
   - type: markdown
