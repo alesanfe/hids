@@ -1,0 +1,2 @@
+XLSX, XLS: Microsoft Excel formats.
+CSV: Comma-Separated Values, a text file format for tabular data.
