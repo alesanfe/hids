@@ -2,9 +2,6 @@ from datetime import datetime
 from neomodel import StructuredNode, StringProperty, RelationshipTo, RelationshipFrom, DateProperty, config, db, One, \
     ZeroOrOne
 
-config.DATABASE_URL = 'bolt://neo4j:12345678@localhost:7687'
-
-
 class HashNode(StructuredNode):
     name = StringProperty(unique_index=True)
     path = StringProperty(index=True)
@@ -20,7 +17,7 @@ def find_node(root, name):
         return None
     elif root.name == name:
         return root
-    elif root.name > name:
+    elif root.name < name:
         return find_node(root.lower.single(), name)
     else:
         return find_node(root.upper.single(), name)
@@ -29,7 +26,7 @@ def find_node(root, name):
 def add_node(root, new_node):
     if root is None:
         return new_node
-    elif root.name > new_node.name:
+    elif root.name < new_node.name:
         son = root.lower.single()
         if son is None:
             root.lower.connect(new_node)
@@ -42,36 +39,24 @@ def add_node(root, new_node):
         else:
             add_node(son, new_node)
 
+def add_node_sorted(root, lista_nodos):
+    if(len(lista_nodos)==1):
+        root.lower.connect(lista_nodos[0])
+    elif(len(lista_nodos)//2==0):
+        None
+    else:
+        mitad=len(lista_nodos)//2
+        izquierda = lista_nodos[:mitad]
+        derecha = lista_nodos[mitad:]
 
-if __name__ == "__main__":
-    db.cypher_query('MATCH (n:HashNode) DETACH DELETE n')
-    a = HashNode()
-    a.name = 'a'
-    a.path = 'a'
-    a.hash = 'a'
-    a.size = 'a'
-    a.save()
+        root1=izquierda[-1]
+        root2=derecha[-1]
 
-    b = HashNode()
-    b.name = 'b'
-    b.path = 'b'
-    b.hash = 'b'
-    b.save()
+        izquierda.remove(root1)
+        derecha.remove(root2)
 
-    c = HashNode()
-    c.name = 'c'
-    c.path = 'c'
-    c.hash = 'c'
-    c.save()
+        root.lower.connect(root1)
+        root.upper.connect(root2)
 
-    b.lower.connect(a)
-    b.upper.connect(c)
-
-    d = HashNode()
-    d.name = 'd'
-    d.path = 'd'
-    d.hash = 'd'
-    d.save()
-
-    print(find_node(b, 'a'))
-    print(add_node(b, d))
+        add_node_sorted(root1,izquierda)
+        add_node_sorted(root2,derecha)

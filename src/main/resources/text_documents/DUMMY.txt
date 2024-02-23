@@ -1,3 +1,0 @@
-TXT: Plain text files.
-DOCX, DOC: Microsoft Word documents.
-PDF: Portable Document Format, used for documents that need to retain their original formatting.

@@ -11,7 +11,8 @@ def get_hash(name, algorithm='sha256'):
 
     return calculated_hash.hexdigest()
 
-
+'''
 file_path = 'C:/Users/Ignacio/Desktop/Universidad/I.informatica/4º/SSII/Recursos/GIF2.gif'
 file_hash = get_hash(file_path)
 print(f'The hash of the file {file_path} is: {file_hash}')
+'''
