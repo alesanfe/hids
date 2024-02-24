@@ -1,12 +1,10 @@
 import os
-import sys
 from tkinter import Frame
 
 import customtkinter as ctk
 
+from src.main.python.client import Client
 from src.main.python.logger import Logger
-from src.main.python.redirectors import LogRedirector, StdOutRedirect
-from src.main.python.repository import Repository
 
 
 
@@ -26,8 +24,8 @@ class InterfaceHIDS:
             for file in aux_files:
                 if "." in file:
                     self.files.append(file)
-        self.repository = Repository("neo4j", "12345678")
-        self.repository.load_data()
+        self.client = Client("localhost", 12345)
+        self.client.connect()
         self.logger = Logger()
 
         self.console = ctk.CTkScrollableFrame(self.root, width=300, height=700)
@@ -100,10 +98,7 @@ class InterfaceHIDS:
             contenido_label = ctk.CTkTextbox(self.console, width=2000, height=700,
                                            font=ctk.CTkFont(family=self.TERMINAL_FONT, size=15))
             contenido_label.pack(side="top", anchor="w")
-            terminal_redirector = StdOutRedirect(contenido_label)
-            sys.stdout = terminal_redirector
-            sys.stderr = terminal_redirector
-            print(contenido)
+            contenido_label.insert(ctk.END, contenido)
 
     def create_check_integrity_buttons(self):
         frame = self.tabview.tab("Verificación de Integridad")
@@ -125,9 +120,10 @@ class InterfaceHIDS:
         contenido_label = ctk.CTkTextbox(self.console, width=2000, height=700,
                                        font=ctk.CTkFont(family=self.TERMINAL_FONT, size=15))
         contenido_label.pack(side="top", anchor="w")
-        log_redirector = LogRedirector(contenido_label)
-        self.logger.addHandler(log_redirector)
-        self.repository.one_file(file)
+        self.client.send_message(file)
+        message = "Not Modified" if bool(self.client.receive_message()) else "Modified"
+        contenido_label.insert(ctk.INSERT, message)
+
 
 
     def change_appearance_mode_event(self, mode: str) -> None:

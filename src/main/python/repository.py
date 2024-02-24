@@ -1,5 +1,6 @@
 import os
 
+from loguru import logger
 from neomodel import config, db
 
 from src.main.python.hashing import get_hash
@@ -187,15 +188,17 @@ class Repository:
 
     def one_file(self, name):
         node = self.find_node_by_name(name)
-        print(name)
-        self.check_hash(node)
+        logger.info(name)
+        return self.check_hash(node)
 
     def check_hash(self, node):
         if node.hash != "" and node.hash != None:
             if node.hash != get_hash(node.path):
                 self.logger.error("File {} has been modified".format(node.path))
+                return True
             else:
                 self.logger.info("File {} has not been modified".format(node.path))
+                return False
 
 
 if __name__ == "__main__":
