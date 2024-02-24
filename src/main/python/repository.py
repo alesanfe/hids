@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 from loguru import logger
 from neomodel import config, db
@@ -9,6 +10,16 @@ from src.main.python.models import HashNode
 
 
 class Repository:
+    """
+    The Repository class manages the loading, organizing, and checking of files in a hierarchical structure.
+    It uses a database connection specified by the provided username and password.
+
+    Attributes:
+        user (str): Database username.
+        password (str): Database password.
+        roots (dict): Dictionary to store root nodes for each file extension.
+        logger (Logger): An instance of the Logger class for logging messages.
+    """
 
     def __init__(self, user, password):
         """
@@ -21,7 +32,7 @@ class Repository:
         self.user = user
         self.password = password
         self.roots = {}
-        self.logger = Logger()
+        self.logger = Logger()  # Replace 'Logger' with the actual Logger class in use
         config.DATABASE_URL = f'bolt://{user}:{password}@localhost:7687'
 
     def load_data(self):
@@ -33,8 +44,7 @@ class Repository:
             try:
                 root = HashNode.nodes.get(name=key)
             except HashNode.DoesNotExist:
-                root = HashNode(name=key)
-                root.save()
+                root = HashNode(name=key).save()
             self.roots[key] = root
             node_list = []
             self.logger.info(f"Loading {key}")
@@ -42,11 +52,8 @@ class Repository:
                 name = os.path.basename(value)
                 new_node = self.find_node_by_name(name)
                 if new_node is None:
-                    new_node = HashNode()
-                    new_node.name = str(name)
-                    new_node.path = str(value)
-                    new_node.hash = get_hash(value)
-                    new_node.save()
+                    date = datetime.now()
+                    new_node = HashNode(name=name, value=value, created_at=date, hash=get_hash(value, date)).save()
                     node_list.append(new_node)
                 else:
                     self.check_hash(new_node)
@@ -107,7 +114,6 @@ class Repository:
         root = self.roots.get(extension)
         return self.find_node(root, name)
 
-
     def add_node(self, root, new_node):
         """
         Adds a new node to the hierarchical structure.
@@ -149,10 +155,8 @@ class Repository:
         """
         extension = os.path.splitext(name)[-1]
         root = self.roots.get(extension)
-        new_node = HashNode()
-        new_node.name = str(os.path.basename(name))
-        new_node.path = str(name)
-        new_node.hash = get_hash(name)
+        date = datetime.now()
+        new_node = HashNode(name=str(os.path.basename(name)), path=str(name), hash=get_hash(name, date), created_at=date).save()
         new_node.save()
         self.add_node(root, new_node)
 
@@ -180,20 +184,47 @@ class Repository:
         self.add_node_sorted(root, right_nodes)
 
     def get_all(self):
+        """
+        Retrieves all nodes from the hierarchical structure.
+
+        Returns:
+            QuerySet: All nodes in the hierarchical structure.
+        """
         return HashNode.nodes.all()
 
     def all_files(self):
+        """
+        Checks the hash value for all files in the hierarchical structure.
+        """
         for node in self.get_all():
             self.check_hash(node)
 
     def one_file(self, name):
+        """
+        Checks the hash value for a specific file in the hierarchical structure.
+
+        Args:
+            name (str): The name of the file to check.
+
+        Returns:
+            bool: True if the file has been modified, False otherwise.
+        """
         node = self.find_node_by_name(name)
-        logger.info(name)
+        self.logger.info(name)
         return self.check_hash(node)
 
     def check_hash(self, node):
-        if node.hash != "" and node.hash != None:
-            if node.hash != get_hash(node.path):
+        """
+        Checks if the hash value of a node matches the computed hash for the associated file.
+
+        Args:
+            node (HashNode): The node to check.
+
+        Returns:
+            bool: True if the file has been modified, False otherwise.
+        """
+        if node.hash != "" and node.hash is not None:
+            if node.hash != get_hash(node.path, node.created_at):
                 self.logger.error("File {} has been modified".format(node.path))
                 return True
             else:

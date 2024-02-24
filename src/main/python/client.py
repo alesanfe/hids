@@ -20,7 +20,6 @@ class Client:
 
         Raises:
             ConnectionError: If the connection is not established.
-
         """
         if not self.client_socket:
             raise ConnectionError("Connection not established. Call connect() first.")
@@ -41,7 +40,6 @@ class Client:
 
         Raises:
             ConnectionError: If the connection is not established.
-
         """
         if not self.client_socket:
             raise ConnectionError("Connection not established. Call connect() first.")
@@ -56,7 +54,6 @@ class Client:
     def close(self):
         """
         Closes the connection with the server.
-
         """
         if self.client_socket:
             self.client_socket.close()

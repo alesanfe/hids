@@ -1,11 +1,9 @@
 import socket
 import threading
-
 import schedule
-from loguru import logger
 
+from src.main.python.logger import Logger
 from src.main.python.repository import Repository
-
 
 class Server:
     """
@@ -26,6 +24,7 @@ class Server:
         self.port = port
         self.server_socket = None
         self.repository = Repository(user, password)
+        self.logger = Logger()
         self.repository.load_data()
 
     def start(self):
@@ -34,15 +33,15 @@ class Server:
         """
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.bind((self.host, self.port))
-        self.server_socket.listen(5)  # Aumentado el número de conexiones en cola
+        self.server_socket.listen(5)  # Increased the number of connections in the queue
 
-        logger.info(f"Server listening on {self.host}:{self.port}")
+        self.logger.info(f"Server listening on {self.host}:{self.port}")
 
         while True:
             client_socket, addr = self.server_socket.accept()  # Accept incoming connection
-            logger.info(f"Connection established from {addr}")
+            self.logger.info(f"Connection established from {addr}")
 
-            # Manejar la comunicación con el cliente en un hilo separado
+            # Handle communication with the client in a separate thread
             threading.Thread(target=self.handle_client, args=(client_socket,)).start()
 
     def handle_client(self, client_socket):
@@ -53,61 +52,23 @@ class Server:
             client_socket (socket): The socket for the incoming connection.
         """
         try:
-            schedule.every().day.at("12:00").do(self.repository.all_files())
+            schedule.every().day.at("12:00").do(self.repository.all_files)
 
             while True:
                 schedule.run_pending()
-                data = client_socket.recv(1024)  # Recibir datos del cliente
+                data = client_socket.recv(1024)  # Receive data from the client
                 if not data:
-                    break  # Si no hay datos, el cliente ha cerrado la conexión
+                    break  # If no data, the client has closed the connection
 
                 received_message = data.decode()
-                logger.info(f"Received message from {client_socket.getpeername()}: {received_message}")
+                self.logger.info(f"Received message from {client_socket.getpeername()}: {received_message}")
 
-                self.repository.one_file(received_message)
-
-                # Responder al cliente
-                response_message = "Server received your message: " + received_message + " - " + str(self.km)
-                client_socket.sendall(response_message.encode())
+                message = self.repository.one_file(received_message)
+                client_socket.sendall(str(message).encode("utf-8"))
         except Exception as e:
-            logger.info(f"Error handling client: {e}")
+            self.logger.info(f"Error handling client: {e}")
         finally:
             client_socket.close()
-
-    def start(self):
-        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server_socket.bind((self.host, self.port))
-        self.server_socket.listen(5)  # Aumentado el número de conexiones en cola
-
-        logger.info(f"Server listening on {self.host}:{self.port}")
-
-        while True:
-            client_socket, addr = self.server_socket.accept()  # Accept incoming connection
-            logger.info(f"Connection established from {addr}")
-
-            # Manejar la comunicación con el cliente en un hilo separado
-            threading.Thread(target=self.handle_client, args=(client_socket,)).start()
-
-    def handle_client(self, client_socket):
-        try:
-            while True:
-                data = client_socket.recv(1024)  # Recibir datos del cliente
-                if not data:
-                    break  # Si no hay datos, el cliente ha cerrado la conexión
-
-                received_message = data.decode()
-                logger.info(f"Received message from {client_socket.getpeername()}: {received_message}")
-
-
-
-                # Responder al cliente
-                response_message = self.repository.one_file(received_message)
-                client_socket.sendall(str(response_message).encode('utf8'))
-        except Exception as e:
-            logger.error(f"Error handling client: {e}")
-        finally:
-            client_socket.close()
-
 
 if __name__ == "__main__":
     server = Server("localhost", 12345, "neo4j", "12345678")
