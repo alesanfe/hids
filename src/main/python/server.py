@@ -1,8 +1,7 @@
 import hashlib
 import os
 
-
-
+from integrity_vertification import get_hash
 
 if __name__ == '__main__':
     file_path = r'../resources\compressed_files\DUMMY_compressed_files - copia.txt'

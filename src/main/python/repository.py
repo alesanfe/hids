@@ -7,7 +7,7 @@ from neomodel import config, db
 from src.main.python.integrity_vertification import get_hash
 from src.main.python.models import HashNode
 
-# config.DATABASE_URL = 'bolt://neo4j:12345678@localhost:7687'
+config.DATABASE_URL = 'bolt://neo4j:ssii1234@localhost:7687'
 def load_data():
     for ruta_actual, subcarpetas, archivos in os.walk("../resources"):
         if(ruta_actual=="../resources"):
@@ -21,7 +21,6 @@ def load_data():
         for archivo in archivos:
             path = os.path.join(ruta_actual, archivo)
             name=archivo
-            # hash= get_hash(path)
 
             new_node = HashNode()
             new_node.name = str(name)
@@ -74,7 +73,7 @@ def add_node(root, new_node):
             add_node(son, new_node)
 
 if __name__ == '__main__':
-    config.DATABASE_URL = 'bolt://neo4j:12345678@localhost:7687'
+    config.DATABASE_URL = 'bolt://neo4j:ssii1234@localhost:7687'
     db.cypher_query("MATCH(n) DETACH DELETE n")
     load_data()
 
