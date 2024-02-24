@@ -7,7 +7,7 @@ from neomodel import config, db
 from src.main.python.integrity_vertification import get_hash
 from src.main.python.models import HashNode
 
-config.DATABASE_URL = 'bolt://neo4j:12345678@localhost:7687'
+# config.DATABASE_URL = 'bolt://neo4j:12345678@localhost:7687'
 def load_data():
     for ruta_actual, subcarpetas, archivos in os.walk("../resources"):
         if(ruta_actual=="../resources"):
