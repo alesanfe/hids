@@ -6,7 +6,7 @@ from tkinter import Frame, IntVar
 import customtkinter as tk
 
 
-class GenericTesterApp:
+class InterfaceApp:
     """
     A generic tester application with a graphical user interface for running tests.
 
@@ -25,13 +25,6 @@ class GenericTesterApp:
     TERMINAL_FONT = "Consolas"
 
     def __init__(self, logs: list) -> None:
-        """
-        Initialize a new instance of the GenericTesterApp class.
-
-        :param title: The title of the instance.
-        :param base_command: The base command for the instance.
-        :param tests: The list of tests for the instance.
-        """
         self.root = tk.CTk()
         self.logs = logs
 
@@ -42,34 +35,17 @@ class GenericTesterApp:
         self.initialize()
 
     def initialize(self):
-        """
-        Initialize the object by setting up the appearance, creating the graphical user interface,
-        and running the main event loop.
-        """
         self.setup_appearance()
         self.create_gui()
         self.root.mainloop()
 
     def set_appearance_mode(self, new_appearance_mode: str):
-        """
-        Set the appearance mode of the application.
-
-        :param new_appearance_mode: The new appearance mode to set.
-        """
         tk.set_appearance_mode(new_appearance_mode)
 
     def setup_appearance(self):
-        """
-        Set up the appearance mode and color theme for the application.
-        """
         tk.set_appearance_mode(self.DEFAULT_APPEARANCE)
         tk.set_default_color_theme(self.DEFAULT_COLOR_THEME)
     def create_gui(self):
-        """
-        Set up the appearance of the application.
-        This function sets the appearance mode to the default appearance mode
-        and the color theme to the default color theme.
-        """
         self.root.geometry(self.DEFAULT_GEOMETRY)
         self.root.title("Integrity Check HIDS")
 
@@ -80,12 +56,9 @@ class GenericTesterApp:
         self.create_sidebar()
 
     def create_sidebar(self):
-        """
-        Create a sidebar frame and add it to the root window.
-        """
         sidebar_frame = tk.CTkFrame(self.root, width=140, corner_radius=0,border_color="Red")
         sidebar_frame.grid(row=0, column=0, rowspan=4, sticky="nsew")
-        sidebar_frame.grid_rowconfigure(1 + 1, weight=1)
+        sidebar_frame.grid_rowconfigure(1, weight=1)
 
 
         self.tabview = tk.CTkTabview(sidebar_frame, width=300, height=800)
@@ -94,39 +67,30 @@ class GenericTesterApp:
         self.tabview.add("Verificación de Integridad")
 
 
-        self.create_test_checkboxes()
+        self.create_log_buttons()
         self.create_appearance_options(sidebar_frame)
 
 
     def create_appearance_options(self, parent_frame: Frame) -> None:
-        """
-        Create appearance options for the given parent frame.
-
-        :param parent_frame: The parent frame in which the appearance options will be created.
-        """
         appearance_mode_label = tk.CTkLabel(parent_frame, text="Appearance Mode:", anchor="w")
-        appearance_mode_label.grid(row=1 + 3, column=0, padx=20, pady=(10, 0))
+        appearance_mode_label.grid(row=1, column=0, padx=20, pady=(10, 0))
         appearance_mode_optionmenu = tk.CTkOptionMenu(parent_frame, values=self.VALUES_APPEARANCE,
                                                       command=self.change_appearance_mode_event)
-        appearance_mode_optionmenu.grid(row=1 + 4, column=0, padx=20, pady=(10, 10))
+        appearance_mode_optionmenu.grid(row=1, column=0, padx=20, pady=(10, 10))
 
-    def create_test_checkboxes(self):
-        """
-        Create checkboxes with the tests and an "Accept" button.
-
-        :param key: The tabview in which the checkboxes will be created.
-        """
+    def create_log_buttons(self):
         frame = self.tabview.tab("Historial de Logs")
 
-        checkboxes = []
-        checkbox_frame = tk.CTkScrollableFrame(frame)
-        checkbox_frame.grid(row=1, column=0, padx=20, pady=10, sticky="nsew")
+        logs = []
+        logs_frame = tk.CTkScrollableFrame(frame)
+        logs_frame.grid(row=1, column=0, padx=20, pady=10, sticky="nsew")
 
         for index, (name) in enumerate(self.logs):
-            checkbox = tk.CTkButton(checkbox_frame, text=name,fg_color="transparent",
+            log_button = tk.CTkButton(logs_frame, text=name,fg_color="transparent",
                                     command=lambda file=name: self.display_output(file))
-            checkbox.grid(row=index + 1, column=0, padx=10, sticky="w")
-            checkboxes.append(checkbox)
+            log_button.grid(row=index + 1, column=0, padx=10, sticky="w")
+            logs.append(log_button)
+
 
     def display_output(self, file:str):
         for widget in self.console.winfo_children():
@@ -149,12 +113,12 @@ class GenericTesterApp:
         :param mode: The selected appearance mode.
         """
         tk.set_appearance_mode(mode)
-class SPITesterApp(GenericTesterApp):
+class InterfaceHIDS(InterfaceApp):
     def __init__(self):
         logs= os.listdir("../logs")
         super().__init__(logs=logs)
 
 
 if __name__ == '__main__':
-    app = SPITesterApp()
+    app = InterfaceHIDS()
 
