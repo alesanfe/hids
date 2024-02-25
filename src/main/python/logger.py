@@ -25,7 +25,3 @@ class Logger:
 
     def warning(self, message):
         logger.warning(message)
-
-if __name__ == "__main__":
-    logger = Logger()
-    logger.info("This is an info message")
