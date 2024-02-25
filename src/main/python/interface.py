@@ -176,6 +176,3 @@ class InterfaceHIDS:
         self.set_appearance_mode(mode)
         ctk.set_appearance_mode(mode)
 
-if __name__ == '__main__':
-    app = InterfaceHIDS()
-
