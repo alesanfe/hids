@@ -14,7 +14,8 @@ class Logger:
         log_file_path = os.path.join('../logs', log_file_name)
 
         # Configure the Loguru logger
-        logger.add(log_file_path, rotation="1 day")
+        fmt = "{time} - {level} - {message}"
+        logger.add(log_file_path, rotation="1 day", format=fmt)
 
     def info(self, message):
         logger.info(message)
@@ -25,5 +26,6 @@ class Logger:
     def warning(self, message):
         logger.warning(message)
 
-    def addHandler(self, handler):
-        logger.add(handler)
+if __name__ == "__main__":
+    logger = Logger()
+    logger.info("This is an info message")

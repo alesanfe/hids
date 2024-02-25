@@ -8,6 +8,7 @@ from src.main.python.hashing import get_hash
 from src.main.python.logger import Logger
 from src.main.python.models import HashNode
 
+logger = Logger()
 
 class Repository:
     """
@@ -32,7 +33,6 @@ class Repository:
         self.user = user
         self.password = password
         self.roots = {}
-        self.logger = Logger()  # Replace 'Logger' with the actual Logger class in use
         config.DATABASE_URL = f'bolt://{user}:{password}@localhost:7687'
 
     def load_data(self):
@@ -47,15 +47,16 @@ class Repository:
                 root = HashNode(name=key).save()
             self.roots[key] = root
             node_list = []
-            self.logger.info(f"Loading {key}")
+            logger.info(f"Loading {key}")
             for value in values:
                 name = os.path.basename(value)
                 new_node = self.find_node_by_name(name)
                 if new_node is None:
                     date = datetime.now()
-                    new_node = HashNode(name=name, value=value, created_at=date, hash=get_hash(value, date)).save()
+                    new_node = HashNode(name=name, path=value, created_at=date, hash=get_hash(value, date)).save()
                     node_list.append(new_node)
                 else:
+                    logger.info(f"File {name} already exists")
                     self.check_hash(new_node)
                     new_node.save()
             self.add_node_sorted(root, node_list)
@@ -130,14 +131,14 @@ class Repository:
         elif root.name > new_node.name:
             son = root.lower.single()
             if son is None:
-                self.logger.info(f"Adding {new_node.name}")
+                logger.info(f"Adding {new_node.name} in LOWER side of {root.name}")
                 root.lower.connect(new_node)
             else:
                 self.add_node(son, new_node)
         else:
             son = root.upper.single()
             if son is None:
-                self.logger.info(f"Adding {new_node.name}")
+                logger.info(f"Adding {new_node.name} in UPPER side of {root.name}")
                 root.upper.connect(new_node)
             else:
                 self.add_node(son, new_node)
@@ -210,7 +211,7 @@ class Repository:
             bool: True if the file has been modified, False otherwise.
         """
         node = self.find_node_by_name(name)
-        self.logger.info(name)
+        logger.info("Checking file {}".format(name))
         return self.check_hash(node)
 
     def check_hash(self, node):
@@ -225,16 +226,8 @@ class Repository:
         """
         if node.hash != "" and node.hash is not None:
             if node.hash != get_hash(node.path, node.created_at):
-                self.logger.error("File {} has been modified".format(node.path))
+                logger.error("File {} has been modified".format(node.path))
                 return True
             else:
-                self.logger.info("File {} has not been modified".format(node.path))
+                logger.info("File {} has not been modified".format(node.path))
                 return False
-
-
-if __name__ == "__main__":
-    repository = Repository("neo4j", "12345678")
-    # db.cypher_query("MATCH (n) DETACH DELETE n")
-    repository.load_data()
-    a = repository.find_node_by_name("a.txt")
-    print(a)

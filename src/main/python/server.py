@@ -5,6 +5,8 @@ import schedule
 from src.main.python.logger import Logger
 from src.main.python.repository import Repository
 
+logger = Logger()
+
 class Server:
     """
     This class implements a simple TCP server that listens for incoming connections
@@ -24,7 +26,6 @@ class Server:
         self.port = port
         self.server_socket = None
         self.repository = Repository(user, password)
-        self.logger = Logger()
         self.repository.load_data()
 
     def start(self):
@@ -35,11 +36,11 @@ class Server:
         self.server_socket.bind((self.host, self.port))
         self.server_socket.listen(5)  # Increased the number of connections in the queue
 
-        self.logger.info(f"Server listening on {self.host}:{self.port}")
+        logger.info(f"Server listening on {self.host}:{self.port}")
 
         while True:
             client_socket, addr = self.server_socket.accept()  # Accept incoming connection
-            self.logger.info(f"Connection established from {addr}")
+            logger.info(f"Connection established from {addr}")
 
             # Handle communication with the client in a separate thread
             threading.Thread(target=self.handle_client, args=(client_socket,)).start()
@@ -61,12 +62,12 @@ class Server:
                     break  # If no data, the client has closed the connection
 
                 received_message = data.decode()
-                self.logger.info(f"Received message from {client_socket.getpeername()}: {received_message}")
+                logger.info(f"Received message from {client_socket.getpeername()}: {received_message}")
 
                 message = self.repository.one_file(received_message)
                 client_socket.sendall(str(message).encode("utf-8"))
         except Exception as e:
-            self.logger.info(f"Error handling client: {e}")
+            logger.info(f"Error handling client: {e}")
         finally:
             client_socket.close()
 

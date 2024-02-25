@@ -13,7 +13,7 @@ class InterfaceHIDS:
     VALUES_APPEARANCE = ["Dark", "Light"]
     TERMINAL_FONT = "Consolas"
 
-    def __init__(self, logs_path="../logs", files_path="../resources") -> None:
+    def __init__(self, host, port, logs_path="../logs", files_path="../resources") -> None:
         """
         Initializes the InterfaceHIDS class.
 
@@ -24,9 +24,9 @@ class InterfaceHIDS:
         self.root = ctk.CTk()
         self.logs = os.listdir(logs_path)
         self.files = [file for _, _, aux_files in os.walk(files_path) for file in aux_files if "." in file]
-        self.client = Client("localhost", 12345)
+        self.client = Client(host, port)
         self.client.connect()
-        self.logger = Logger()
+
 
         self.console = ctk.CTkScrollableFrame(self.root, width=300, height=700)
         self.console.grid(row=0, column=1, padx=(20, 20), pady=(20, 0), sticky="nsew")
