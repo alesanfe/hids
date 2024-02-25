@@ -70,7 +70,3 @@ class Server:
             logger.info(f"Error handling client: {e}")
         finally:
             client_socket.close()
-
-if __name__ == "__main__":
-    server = Server("localhost", 12345, "neo4j", "12345678")
-    server.start()
