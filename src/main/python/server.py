@@ -26,6 +26,7 @@ class Server:
         self.port = port
         self.server_socket = None
         self.repository = Repository(user, password)
+        self.repository.delete_all()
         self.repository.load_data()
 
     def start(self):

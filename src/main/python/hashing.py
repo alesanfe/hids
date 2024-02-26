@@ -1,29 +1,52 @@
 import hashlib
-import os
+from configparser import ConfigParser
 
+def select_hash_algorithm(day):
+    """
+    Selects the hash algorithm based on the day of the month.
+    """
+    return 'sha256' if day % 2 == 0 else 'md5'
 
-def get_hash(name, date):
-    # Selecciona el algoritmo de hash basándose en el día de la fecha
-    day = int(date.today().strftime('%d'))
-    if day % 2 == 0:
-        algorithm = 'sha256'
-    else:
-        algorithm = 'md5'
+def calculate_file_hash(file_path, day):
+    """
+    Calculates the hash of a file using the selected algorithm.
+    """
+    calculated_hash = hashlib.new(select_hash_algorithm(day))
 
-    calculated_hash = hashlib.new(algorithm)
-
-    # Agrega la fecha al cálculo del hash
-    calculated_hash.update(date.today().strftime('%Y-%m-%d').encode('utf-8'))
-
-    # Codifica el día de manera más compleja y aplicando otra función hash
-    encoded_day = hashlib.sha256(str(day).encode('utf-8')).hexdigest()
-    calculated_hash.update(encoded_day.encode('utf-8'))
-
-    with open(name, 'rb') as file:
+    with open(file_path, 'rb') as file:
         for block in iter(lambda: file.read(4096), b""):
             calculated_hash.update(block)
 
     return calculated_hash.hexdigest()
 
+def calculate_mac(hash_value, token, day):
+    """
+    Calculates the Message Authentication Code (MAC) using the hash and token.
+    """
+    calculated_mac = hashlib.new(select_hash_algorithm(day + 1))
 
+    if day == 0:
+        calculated_mac.update((hash_value + token).encode())
+    else:
+        calculated_mac.update((token + hash_value).encode())
 
+    return calculated_mac.hexdigest()
+
+def get_hash(name, date_today):
+    """
+    Calculates the hash of a file using different algorithms and applies a Message Authentication Code (MAC).
+    """
+    day = int(date_today.strftime('%d'))
+
+    # Calculate the file hash
+    hash_value = calculate_file_hash(name, day)
+
+    # Read the token from the configuration file
+    config = ConfigParser()
+    config.read("config.ini")
+    token = config.get("HASHING", "token")
+
+    # Calculate the MAC using the hash and token
+    mac_value = calculate_mac(hash_value, token, day)
+
+    return mac_value

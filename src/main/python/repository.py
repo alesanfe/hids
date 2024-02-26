@@ -231,3 +231,9 @@ class Repository:
             else:
                 logger.info("File {} has not been modified".format(node.path))
                 return False
+
+    def delete_all(self):
+        """
+        Deletes all nodes from the hierarchical structure.
+        """
+        HashNode.nodes.all().delete()
