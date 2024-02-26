@@ -5,7 +5,7 @@ def select_hash_algorithm(day):
     """
     Selects the hash algorithm based on the day of the month.
     """
-    return 'sha256' if day % 2 == 0 else 'md5'
+    return 'sha512' if day % 2 == 0 else 'sha3_384'
 
 def calculate_file_hash(file_path, day):
     """
@@ -25,7 +25,7 @@ def calculate_mac(hash_value, token, day):
     """
     calculated_mac = hashlib.new(select_hash_algorithm(day + 1))
 
-    if day == 0:
+    if day % 2 == 0:
         calculated_mac.update((hash_value + token).encode())
     else:
         calculated_mac.update((token + hash_value).encode())
