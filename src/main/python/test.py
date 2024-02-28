@@ -12,10 +12,6 @@ class Test:
     config = ConfigParser()
     config.read("config.ini")
 
-    # SERVER
-    host = config.get("SERVER", "host")
-    port = config.get("SERVER", "port")
-
     # DB
     user = config.get("DB", "user")
     password = config.get("DB", "password")
@@ -87,21 +83,24 @@ class Test:
 
         repository = Repository(self.user, self.password)
         repository.load_data()
-        archivo = random.randint(1, cantidad_archivos)
-        carpeta=random.randint(1, cantidad_carpetas)
+        archivo = random.randint(1, self.cantidad_archivos)
+        carpeta=random.randint(1, self.cantidad_carpetas)
         self.modificar_archivo(carpeta, archivo)
         repository.one_file(f"file_{carpeta}_{archivo}.txt")
 
+        result = self.mirar_logs()
+
+        print("#@#@#@#@#@#@#@#@#@")
+        print("Test que utiliza la función one_file y modifica un archivo.")
+        print("#@#@#@#@#@#@#@#@#@")
         print(f"\n{Fore.CYAN}{'=' * 40}{Style.RESET_ALL}")
         print(f"{Fore.YELLOW}Archivo modificado:{Style.RESET_ALL} file_{carpeta}_{archivo}.txt")
         print(f"{Fore.CYAN}{'=' * 40}{Style.RESET_ALL}\n")
-
-        result = self.mirar_logs()
-
         if result == 1:
             print(f"{Fore.GREEN}Solo se ha modificado un archivo.{Style.RESET_ALL}")
         else:
             print(f"{Fore.RED}El test ha fallado.{Style.RESET_ALL}")
+        print("#@#@#@#@#@#@#@#@#@")
 
         self.borrar_archivos_y_carpetas()
 
@@ -115,10 +114,14 @@ class Test:
         repository.all_files()
         result = self.mirar_logs()
 
-        if result == cantidad_archivos*cantidad_carpetas:
+        print("#@#@#@#@#@#@#@#@#@")
+        print("Test que utiliza la función all_files y se modifican todos archivos.")
+        print("#@#@#@#@#@#@#@#@#@")
+        if result == self.cantidad_archivos * self.cantidad_carpetas:
             print(f"{Fore.GREEN}Se han modificado {result} archivos, el test es correcto.{Style.RESET_ALL}")
         else:
             print(f"{Fore.RED}El test ha fallado.{Style.RESET_ALL}")
+        print("#@#@#@#@#@#@#@#@#@")
 
         self.borrar_archivos_y_carpetas()
 
@@ -126,21 +129,24 @@ class Test:
         self.generar_archivos_y_carpetas()
         repository = Repository(self.user, self.password)
         repository.load_data()
-        archivo = random.randint(1, cantidad_archivos)
-        carpeta = random.randint(1, cantidad_carpetas)
+        archivo = random.randint(1, self.cantidad_archivos)
+        carpeta = random.randint(1, self.cantidad_carpetas)
         self.modificar_archivo(carpeta, archivo)
         repository.all_files()
 
+        result = self.mirar_logs()
+
+        print("#@#@#@#@#@#@#@#@#@")
+        print("Test que utiliza la función all_files y se modifica una archivo.")
+        print("#@#@#@#@#@#@#@#@#@")
         print(f"\n{Fore.CYAN}{'=' * 40}{Style.RESET_ALL}")
         print(f"{Fore.YELLOW}Archivo modificado:{Style.RESET_ALL} file_{carpeta}_{archivo}.txt")
         print(f"{Fore.CYAN}{'=' * 40}{Style.RESET_ALL}\n")
-
-        result = self.mirar_logs()
-
         if result == 1:
             print(f"{Fore.GREEN}Solo se ha modificado un archivo.{Style.RESET_ALL}")
         else:
             print(f"{Fore.RED}El test ha fallado.{Style.RESET_ALL}")
+        print("#@#@#@#@#@#@#@#@#@")
 
         self.borrar_archivos_y_carpetas()
 
@@ -148,15 +154,19 @@ class Test:
         self.generar_archivos_y_carpetas()
         repository = Repository(self.user, self.password)
         repository.load_data()
-        archivo = random.randint(1, cantidad_archivos)
-        carpeta = random.randint(1, cantidad_carpetas)
+        archivo = random.randint(1, self.cantidad_archivos)
+        carpeta = random.randint(1, self.cantidad_carpetas)
         repository.one_file(f"file_{carpeta}_{archivo}.txt")
         result = self.mirar_logs()
 
+        print("#@#@#@#@#@#@#@#@#@")
+        print("Test que utiliza la función one_file y no se modifica ningún archivo")
+        print("#@#@#@#@#@#@#@#@#@")
         if result == 0:
             print(f"{Fore.GREEN}No se ha modificado ningún archivo.{Style.RESET_ALL}")
         else:
             print(f"{Fore.RED}El test ha fallado.{Style.RESET_ALL}")
+        print("#@#@#@#@#@#@#@#@#@")
 
         self.borrar_archivos_y_carpetas()
 
@@ -167,20 +177,62 @@ class Test:
         repository.all_files()
         result = self.mirar_logs()
 
+        print("#@#@#@#@#@#@#@#@#@")
+        print("Test que utiliza la función all_files, no se modifica ningún archivo.")
+        print("#@#@#@#@#@#@#@#@#@")
         if result == 0:
             print(f"{Fore.GREEN}No se ha modificado ningún archivo.{Style.RESET_ALL}")
         else:
             print(f"{Fore.RED}El test ha fallado.{Style.RESET_ALL}")
+        print("#@#@#@#@#@#@#@#@#@")
 
         self.borrar_archivos_y_carpetas()
 
-if __name__=="__main__":
-    cantidad_carpetas = 3
-    cantidad_archivos = 5
-    logger = Logger(is_test=True)
-    test_instance = Test(cantidad_carpetas, cantidad_archivos)
-    test_instance.test1_modificacion_un_archivo_con_one_file()
-    test_instance.test2_modificar_todo_con_all_files()
-    test_instance.test3_modificar_un_archivo_con_all_files()
-    test_instance.test4_modificar_cero_archivos_con_one_file()
-    test_instance.test5_modificar_cero_archivos_con_all_files()
+    def run_tests(self):
+        try:
+            logger = Logger(is_test=True)
+            test_instance = Test(self.cantidad_carpetas, self.cantidad_archivos)
+
+            test_instance.test1_modificacion_un_archivo_con_one_file()
+            test_instance.test2_modificar_todo_con_all_files()
+            test_instance.test3_modificar_un_archivo_con_all_files()
+            test_instance.test4_modificar_cero_archivos_con_one_file()
+            test_instance.test5_modificar_cero_archivos_con_all_files()
+
+            print("\n#@#@#@#@#@#@#@#@#@")
+            print("Resumen de los Tests:")
+            print("#@#@#@#@#@#@#@#@#@")
+            print(f"{Fore.CYAN}{'=' * 40}{Style.RESET_ALL}")
+
+            # Verificar si todos los tests han pasado
+            tests_pasados = (
+                    test_instance.mirar_logs() == 1 and
+                    test_instance.mirar_logs() == self.cantidad_archivos * self.cantidad_carpetas and
+                    test_instance.mirar_logs() == 1 and
+                    test_instance.mirar_logs() == 0 and
+                    test_instance.mirar_logs() == 0
+            )
+
+            if tests_pasados:
+                print(f"{Fore.GREEN}Todos los tests han pasado correctamente.{Style.RESET_ALL}")
+            else:
+                print(f"{Fore.RED}Al menos un test ha fallado.{Style.RESET_ALL}")
+
+            print(f"{Fore.CYAN}{'=' * 40}{Style.RESET_ALL}\n")
+
+            return tests_pasados
+
+        except Exception as e:
+            print(f"Ocurrió un error al ejecutar los tests: {e}")
+            return False
+
+
+if __name__ == "__main__":
+
+    test_instance = Test(3, 5)
+    resultado_tests = test_instance.run_tests()
+
+    if resultado_tests:
+        print("¡Todos los tests han pasado!")
+    else:
+        print("Al menos un test ha fallado.")
