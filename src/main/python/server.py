@@ -1,8 +1,11 @@
 import os
 import socket
 import threading
+import time
+from queue import Queue
+
 import schedule
-import select
+import concurrent.futures
 
 from src.main.python.logger import Logger
 from src.main.python.repository import Repository
@@ -41,6 +44,14 @@ class Server:
 
         logger.info(f"Server listening on {self.host}:{self.port}")
 
+        queue_for_scheduler = Queue()
+        threading.Thread(target=self.print_hello, args=(queue_for_scheduler,)).start()
+
+        print("Hello")
+
+        # Ejecuta self.repository.all_files() en segundo plano cada 10 segundos
+        schedule.every(10).seconds.do(lambda: self.execute_non_blocking(self.repository.all_files))
+
         while True:
             client_socket, addr = self.server_socket.accept()  # Accept incoming connection
             logger.info(f"Connection established from {addr}")
@@ -48,7 +59,23 @@ class Server:
             # Handle communication with the client in a separate thread
             threading.Thread(target=self.handle_client, args=(client_socket,)).start()
             print("hello")
+
         print("adiós")
+
+    def print_hello(self, queue_for_scheduler):
+        """
+        Print "hola" every second.
+        """
+        while True:
+            schedule.run_pending()
+            time.sleep(1)
+
+    def execute_non_blocking(self, func):
+        """
+        Execute a function in a separate thread.
+        """
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            executor.submit(func)
 
     def handle_client(self, client_socket):
         """
@@ -58,12 +85,8 @@ class Server:
             client_socket (socket): The socket for the incoming connection.
         """
         try:
-            client_socket.settimeout(1)  # Establece un tiempo de espera de 1 segundo
-
             while True:
-                ready, _, _ = select.select([client_socket], [], [], 1)  # Espera hasta que haya datos disponibles o hasta que transcurra 1 segundo
-                print("Ready " + str(ready))
-                if len(ready) != 0:
+                try:
                     data = client_socket.recv(1024)  # Recibe datos del cliente
                     if not data:
                         break  # Si no hay datos, el cliente ha cerrado la conexión
@@ -81,6 +104,9 @@ class Server:
 
                     # Send the end indicator
                     client_socket.sendall("END".encode("utf-8"))
+
+                except socket.timeout:
+                    pass  # Se alcanzó el tiempo de espera, continua con el siguiente ciclo
 
         except Exception as e:
             logger.error(f"Error handling client: {e}")
