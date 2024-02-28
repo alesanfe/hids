@@ -43,7 +43,6 @@ class Server:
         self.server_socket.bind((self.host, self.port))
         self.server_socket.listen(5)  # Increased the number of connections in the queue
 
-        queue_for_scheduler = Queue()
         threading.Thread(target=self.print_scheduler).start()
 
         # Execute self.repository.all_files() in the background every 10 seconds
@@ -52,7 +51,6 @@ class Server:
 
         while True:
             client_socket, addr = self.server_socket.accept()  # Accept incoming connection
-            #logger.info(f"Connection established from {addr}")
 
             # Handle communication with the client in a separate thread
             threading.Thread(target=self.handle_client, args=(client_socket,)).start()
