@@ -5,9 +5,11 @@ from loguru import logger
 
 
 class Logger:
-    def __init__(self):
-        # Get the current date
+    def __init__(self, is_test=False):
+        # Get the current date or use a specific date for tests
         current_date = datetime.now().strftime('%Y-%m-%d')
+        if is_test:
+            current_date = '9999-99-99'
 
         # Create a file name with the date
         log_file_name = f'{current_date}_error_log.txt'

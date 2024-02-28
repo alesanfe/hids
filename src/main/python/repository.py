@@ -8,7 +8,7 @@ from src.main.python.hashing import get_hash
 from src.main.python.logger import Logger
 from src.main.python.models import HashNode
 
-logger = Logger()
+#logger = Logger()
 
 class Repository:
     """
