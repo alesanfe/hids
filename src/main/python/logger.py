@@ -10,12 +10,12 @@ class Logger:
         current_date = datetime.now().strftime('%Y-%m-%d')
 
         # Create a file name with the date
-        log_file_name = f'{current_date}_log.txt'
+        log_file_name = f'{current_date}_error_log.txt'
         log_file_path = os.path.join('../logs', log_file_name)
 
         # Configure the Loguru logger
         fmt = "{time} - {level} - {message}"
-        logger.add(log_file_path, rotation="1 day", format=fmt)
+        logger.add(log_file_path, rotation="1 day", format=fmt, level="ERROR")
 
     def info(self, message):
         logger.info(message)

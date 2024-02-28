@@ -1,8 +1,8 @@
 import threading
 from configparser import ConfigParser
 
-from src.main.python.interface import InterfaceHIDS
-from src.main.python.server import Server
+from interface import InterfaceHIDS
+from server import Server
 
 if __name__ == '__main__':
     config = ConfigParser()

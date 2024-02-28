@@ -10,7 +10,7 @@ import concurrent.futures
 from src.main.python.logger import Logger
 from src.main.python.repository import Repository
 
-logger = Logger()
+#logger = Logger()
 
 class Server:
     """
@@ -42,27 +42,23 @@ class Server:
         self.server_socket.bind((self.host, self.port))
         self.server_socket.listen(5)  # Increased the number of connections in the queue
 
-        logger.info(f"Server listening on {self.host}:{self.port}")
+        #logger.info(f"Server listening on {self.host}:{self.port}")
 
         queue_for_scheduler = Queue()
-        threading.Thread(target=self.print_hello, args=(queue_for_scheduler,)).start()
-
-        print("Hello")
+        threading.Thread(target=self.print_scheduler, args=(queue_for_scheduler,)).start()
 
         # Ejecuta self.repository.all_files() en segundo plano cada 10 segundos
-        schedule.every(10).seconds.do(lambda: self.execute_non_blocking(self.repository.all_files))
+        schedule.every(30).seconds.do(lambda: self.execute_non_blocking(self.repository.all_files))
 
         while True:
             client_socket, addr = self.server_socket.accept()  # Accept incoming connection
-            logger.info(f"Connection established from {addr}")
+            #logger.info(f"Connection established from {addr}")
 
             # Handle communication with the client in a separate thread
             threading.Thread(target=self.handle_client, args=(client_socket,)).start()
-            print("hello")
 
-        print("adiós")
 
-    def print_hello(self, queue_for_scheduler):
+    def print_scheduler(self, queue_for_scheduler):
         """
         Print "hola" every second.
         """
@@ -87,12 +83,14 @@ class Server:
         try:
             while True:
                 try:
+                    current_pid = os.getpid()
+                    print(f"PID del proceso actual: {current_pid}")
                     data = client_socket.recv(1024)  # Recibe datos del cliente
                     if not data:
                         break  # Si no hay datos, el cliente ha cerrado la conexión
 
                     received_message = data.decode()
-                    logger.info(f"Received message from {client_socket.getpeername()}: {received_message}")
+                    #logger.info(f"Received message from {client_socket.getpeername()}: {received_message}")
 
                     message = self.actions(received_message)
 
@@ -109,7 +107,8 @@ class Server:
                     pass  # Se alcanzó el tiempo de espera, continua con el siguiente ciclo
 
         except Exception as e:
-            logger.error(f"Error handling client: {e}")
+            print(e)
+            #logger.error(f"Error handling client: {e}")
         finally:
             client_socket.close()
 
