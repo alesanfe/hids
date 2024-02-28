@@ -7,8 +7,10 @@ from queue import Queue
 import schedule
 import concurrent.futures
 
+import select
+
 from src.main.python.logger import Logger
-from src.main.python.monthly_report import compilar_informe_mensual_por_dia
+from src.main.python.monthly_report import compile_monthly_report_by_day
 from src.main.python.repository import Repository
 
 class Server:
@@ -40,15 +42,13 @@ class Server:
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.bind((self.host, self.port))
         self.server_socket.listen(5)  # Increased the number of connections in the queue
-        logger = Logger()
-        #logger.info(f"Server listening on {self.host}:{self.port}")
 
         queue_for_scheduler = Queue()
-        threading.Thread(target=self.print_scheduler, args=(queue_for_scheduler,)).start()
+        threading.Thread(target=self.print_scheduler).start()
 
-        # Ejecuta self.repository.all_files() en segundo plano cada 10 segundos
-        schedule.every(30).seconds.do(lambda: self.execute_non_blocking(self.repository.all_files))
-        #schedule.every(1).months.do(lambda: self.execute_non_blocking(compilar_informe_mensual_por_dia))
+        # Execute self.repository.all_files() in the background every 10 seconds
+        schedule.every(1).days.do(lambda: self.execute_non_blocking(self.repository.all_files))
+        schedule.every(30).days.do(lambda: self.execute_non_blocking(compile_monthly_report_by_day))
 
         while True:
             client_socket, addr = self.server_socket.accept()  # Accept incoming connection
@@ -57,10 +57,9 @@ class Server:
             # Handle communication with the client in a separate thread
             threading.Thread(target=self.handle_client, args=(client_socket,)).start()
 
-
-    def print_scheduler(self, queue_for_scheduler):
+    def print_scheduler(self):
         """
-        Print "hola" every second.
+        Print "hello" every second.
         """
         while True:
             schedule.run_pending()
@@ -83,11 +82,14 @@ class Server:
         try:
             while True:
                 try:
+                    active, _, _ = select.select([client_socket], [], [], 1)
+                    if len(active) == 0:
+                        continue
                     current_pid = os.getpid()
-                    print(f"PID del proceso actual: {current_pid}")
-                    data = client_socket.recv(1024)  # Recibe datos del cliente
+                    print(f"Current process PID: {current_pid}")
+                    data = client_socket.recv(1024)  # Receive data from the client
                     if not data:
-                        break  # Si no hay datos, el cliente ha cerrado la conexión
+                        break  # If no data, the client has closed the connection
 
                     received_message = data.decode()
                     #logger.info(f"Received message from {client_socket.getpeername()}: {received_message}")
@@ -104,7 +106,7 @@ class Server:
                     client_socket.sendall("END".encode("utf-8"))
 
                 except socket.timeout:
-                    pass  # Se alcanzó el tiempo de espera, continua con el siguiente ciclo
+                    pass  # Timeout reached, continue with the next cycle
 
         except Exception as e:
             print(e)
@@ -127,3 +129,4 @@ class Server:
             with open(path_element, 'r', encoding='utf-8') as file:
                 message = file.read()
         return message
+

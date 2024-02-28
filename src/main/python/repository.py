@@ -8,7 +8,6 @@ from src.main.python.hashing import get_hash
 from src.main.python.logger import Logger
 from src.main.python.models import HashNode
 
-#logger = Logger()
 
 class Repository:
     """
@@ -19,7 +18,6 @@ class Repository:
         user (str): Database username.
         password (str): Database password.
         roots (dict): Dictionary to store root nodes for each file extension.
-        logger (Logger): An instance of the Logger class for logging messages.
     """
 
     def __init__(self, user, password):
@@ -69,7 +67,7 @@ class Repository:
             dict: A dictionary where keys are file extensions and values are lists of file paths.
         """
         extensions = {}
-        for current_path, subfolders, files in os.walk("../resources"):
+        for current_path, _, files in os.walk("../resources"):
             if current_path == "../resources":
                 continue
             for file in files:
