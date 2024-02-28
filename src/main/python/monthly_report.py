@@ -102,7 +102,4 @@ def compilar_informe_mensual_por_dia():
         archivo_informe.write("=" * 50 + "\n\n")
 
     print(f"Informe mensual compilado en: {ruta_archivo_informe}")
-# Ejemplo de us
-if __name__ == "__main__":
-    #compilar_informe_mensual()
-    compilar_informe_mensual_por_dia()
+

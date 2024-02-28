@@ -8,7 +8,7 @@ import schedule
 import concurrent.futures
 
 from src.main.python.logger import Logger
-from src.main.python.monthly_report import compilar_informe_mensual
+from src.main.python.monthly_report import compilar_informe_mensual_por_dia
 from src.main.python.repository import Repository
 
 #logger = Logger()
@@ -50,7 +50,7 @@ class Server:
 
         # Ejecuta self.repository.all_files() en segundo plano cada 10 segundos
         schedule.every(30).seconds.do(lambda: self.execute_non_blocking(self.repository.all_files))
-        schedule.every(1).months.do(lambda: self.execute_non_blocking(compilar_informe_mensual))
+        schedule.every(1).months.do(lambda: self.execute_non_blocking(compilar_informe_mensual_por_dia))
 
         while True:
             client_socket, addr = self.server_socket.accept()  # Accept incoming connection
