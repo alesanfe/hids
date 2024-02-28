@@ -67,7 +67,7 @@ class Repository:
             dict: A dictionary where keys are file extensions and values are lists of file paths.
         """
         extensions = {}
-        for current_path, _, files in os.walk("../resources"):
+        for current_path, subfolders, files in os.walk("../resources"):
             if current_path == "../resources":
                 continue
             for file in files:
@@ -223,7 +223,6 @@ class Repository:
             bool: True if the file has been modified, False otherwise.
         """
         if node.hash != "" and node.hash is not None:
-            print(node.hash, get_hash(node.path, node.created_at))
             if node.hash != get_hash(node.path, node.created_at):
                 logger.error("File {} has been modified".format(node.path))
                 return True

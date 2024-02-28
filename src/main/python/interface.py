@@ -7,7 +7,7 @@ from src.main.python.client import Client
 
 
 class InterfaceHIDS:
-    DEFAULT_GEOMETRY = "1250x580"
+    DEFAULT_GEOMETRY = "300x580"
     DEFAULT_APPEARANCE = "dark"
     DEFAULT_COLOR_THEME = "blue"
     VALUES_APPEARANCE = ["Dark", "Light"]
@@ -31,8 +31,8 @@ class InterfaceHIDS:
         self.client.send_message("all_files")
         self.files = self.client.receive_message().split("|")
 
-        self.console = ctk.CTkScrollableFrame(self.root, width=300, height=700)
-        self.console.grid(row=0, column=1, padx=(20, 20), pady=(20, 0), sticky="nsew")
+        #self.console = ctk.CTkScrollableFrame(self.root, width=300, height=700)
+        #self.console.grid(row=0, column=1, padx=(20, 20), pady=(20, 0), sticky="nsew")
 
         self.initialize()
 
@@ -64,12 +64,12 @@ class InterfaceHIDS:
         """
         Creates the main GUI components.
         """
-        self.root.geometry(self.DEFAULT_GEOMETRY)
+        # self.root.geometry(self.DEFAULT_GEOMETRY)
         self.root.title("Integrity Check HIDS")
 
-        self.root.grid_columnconfigure(1, weight=1)
-        self.root.grid_columnconfigure((2, 3), weight=0)
-        self.root.grid_rowconfigure((0, 1, 2), weight=1)
+        #self.root.grid_columnconfigure(1, weight=1)
+        #self.root.grid_columnconfigure((2, 3), weight=0)
+        #self.root.grid_rowconfigure((0, 1, 2), weight=1)
 
         self.create_sidebar()
 
@@ -77,31 +77,18 @@ class InterfaceHIDS:
         """
         Creates the sidebar components.
         """
-        sidebar_frame = ctk.CTkFrame(self.root, width=140, corner_radius=0, border_color="Red")
+        sidebar_frame = ctk.CTkFrame(self.root,  corner_radius=0, border_color="Red")
         sidebar_frame.grid(row=0, column=0, rowspan=4, sticky="nsew")
         sidebar_frame.grid_rowconfigure(1, weight=1)
 
-        self.tabview = ctk.CTkTabview(sidebar_frame, width=300, height=700)
+        self.tabview = ctk.CTkTabview(sidebar_frame)
         self.tabview.grid(padx=(20, 0), pady=(20, 0), sticky="nsew")
         self.tabview.add("Log History")
         self.tabview.add("Integrity Verification")
 
         self.create_log_buttons()
         self.create_check_integrity_buttons()
-        self.create_appearance_options(sidebar_frame)
 
-    def create_appearance_options(self, parent_frame: Frame) -> None:
-        """
-        Creates the appearance options in the sidebar.
-
-        Args:
-            parent_frame (Frame): The parent frame for the appearance options.
-        """
-        appearance_mode_label = ctk.CTkLabel(parent_frame, text="Appearance Mode:", anchor="w")
-        appearance_mode_label.grid(row=1, column=0, padx=20, pady=(10, 0))
-        appearance_mode_optionmenu = ctk.CTkOptionMenu(parent_frame, values=self.VALUES_APPEARANCE,
-                                                       command=self.change_appearance_mode_event)
-        appearance_mode_optionmenu.grid(row=1, column=0, padx=20, pady=(10, 10))
 
     def create_log_buttons(self):
         """
@@ -123,15 +110,19 @@ class InterfaceHIDS:
         Args:
             file (str): The selected log file.
         """
-        for widget in self.console.winfo_children():
-            widget.destroy()
+        log_window = ctk.CTkToplevel()
+        # log_window.geometry(self.DEFAULT_GEOMETRY)
+
+
+
         os.path.join("../logs", file)
         self.client.send_message(f"log {file}")
+
         contenido = self.client.receive_message()
-        title_label = ctk.CTkLabel(self.console, text=file,
+        title_label = ctk.CTkLabel(log_window, text=file,
                                        font=ctk.CTkFont(family=self.TERMINAL_FONT, size=20, weight="bold"))
         title_label.pack(side="top", anchor="w")
-        content_label = ctk.CTkTextbox(self.console, width=2000, height=700,
+        content_label = ctk.CTkTextbox(log_window, width=1000, height=700,
                                            font=ctk.CTkFont(family=self.TERMINAL_FONT, size=15))
         content_label.pack(side="top", anchor="w")
         content_label.insert(ctk.END, contenido)
@@ -157,27 +148,23 @@ class InterfaceHIDS:
         Args:
             file (str): The selected file for integrity check.
         """
-        for widget in self.console.winfo_children():
-            widget.destroy()
-        title_label = ctk.CTkLabel(self.console, text=file,
+        file_frame = ctk.CTkToplevel()
+        # file_frame.geometry(self.DEFAULT_GEOMETRY)
+
+        self.client.send_message(f"file {file}")
+        message = self.client.receive_message()
+
+        message = "Not Modified" if message == "False" else "Modified"
+
+
+        title_label = ctk.CTkLabel(file_frame, text=file,
                                    font=ctk.CTkFont(family=self.TERMINAL_FONT, size=20, weight="bold"))
         title_label.pack(side="top", anchor="w")
-        content_label = ctk.CTkTextbox(self.console, width=2000, height=700,
+
+        content_label = ctk.CTkTextbox(file_frame, width=1000, height=700,
                                        font=ctk.CTkFont(family=self.TERMINAL_FONT, size=15))
         content_label.pack(side="top", anchor="w")
-        self.client.send_message(f"file {file}")
-        message = "Not Modified" if self.client.receive_message() == "False" else "Modified"
-        print(message)
+
         content_label.insert(ctk.INSERT, message)
-
-    def change_appearance_mode_event(self, mode: str) -> None:
-        """
-        Event handler for changing the appearance mode.
-
-        Args:
-            mode (str): The selected appearance mode.
-        """
-        self.set_appearance_mode(mode)
-        ctk.set_appearance_mode(mode)
 
 

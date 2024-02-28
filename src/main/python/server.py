@@ -9,6 +9,7 @@ import concurrent.futures
 
 import select
 
+from src.main.python.client import Client
 from src.main.python.logger import Logger
 from src.main.python.monthly_report import compile_monthly_report_by_day
 from src.main.python.repository import Repository
@@ -49,11 +50,9 @@ class Server:
         schedule.every(1).days.do(lambda: self.execute_non_blocking(self.repository.all_files))
         schedule.every(30).days.do(lambda: self.execute_non_blocking(compile_monthly_report_by_day))
 
-        while True:
-            client_socket, addr = self.server_socket.accept()  # Accept incoming connection
+        client_socket, addr = self.server_socket.accept()  # Accept incoming connection
 
-            # Handle communication with the client in a separate thread
-            threading.Thread(target=self.handle_client, args=(client_socket,)).start()
+        self.handle_client(client_socket)
 
     def print_scheduler(self):
         """
@@ -81,10 +80,10 @@ class Server:
             while True:
                 try:
                     active, _, _ = select.select([client_socket], [], [], 1)
+
                     if len(active) == 0:
                         continue
-                    current_pid = os.getpid()
-                    print(f"Current process PID: {current_pid}")
+
                     data = client_socket.recv(1024)  # Receive data from the client
                     if not data:
                         break  # If no data, the client has closed the connection
@@ -94,10 +93,9 @@ class Server:
 
                     message = self.actions(received_message)
 
-                    chunk_size = 1024
+                    chunk_size = 512
                     for i in range(0, len(message), chunk_size):
                         chunk = message[i:i + chunk_size]
-                        print(chunk)
                         client_socket.sendall(chunk.encode("utf-8"))
 
                     # Send the end indicator
@@ -128,3 +126,12 @@ class Server:
                 message = file.read()
         return message
 
+if __name__ == "__main__":
+    server = Server("localhost", 8080, "neo4j", "12345678")
+    threading.Thread(target=server.start).start()
+    client = Client("localhost", 8080)
+    client.connect()
+    for i in range(600):
+        client.send_message("file DUMMY.txt")
+        response = client.receive_message()
+        print(response, i)
