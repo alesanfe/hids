@@ -2,6 +2,7 @@ import os
 import socket
 import threading
 import schedule
+import select
 
 from src.main.python.logger import Logger
 from src.main.python.repository import Repository
@@ -46,6 +47,8 @@ class Server:
 
             # Handle communication with the client in a separate thread
             threading.Thread(target=self.handle_client, args=(client_socket,)).start()
+            print("hello")
+        print("adiós")
 
     def handle_client(self, client_socket):
         """
@@ -55,29 +58,29 @@ class Server:
             client_socket (socket): The socket for the incoming connection.
         """
         try:
-            schedule.every().day.at("12:00").do(self.repository.all_files)
+            client_socket.settimeout(1)  # Establece un tiempo de espera de 1 segundo
 
             while True:
-                schedule.run_pending()
-                data = client_socket.recv(1024)  # Receive data from the client
+                ready, _, _ = select.select([client_socket], [], [], 1)  # Espera hasta que haya datos disponibles o hasta que transcurra 1 segundo
+                print("Ready " + str(ready))
+                if len(ready) != 0:
+                    data = client_socket.recv(1024)  # Recibe datos del cliente
+                    if not data:
+                        break  # Si no hay datos, el cliente ha cerrado la conexión
 
+                    received_message = data.decode()
+                    logger.info(f"Received message from {client_socket.getpeername()}: {received_message}")
 
-                if not data:
-                    break  # If no data, the client has closed the connection
+                    message = self.actions(received_message)
 
-                received_message = data.decode()
-                logger.info(f"Received message from {client_socket.getpeername()}: {received_message}")
+                    chunk_size = 1024
+                    for i in range(0, len(message), chunk_size):
+                        chunk = message[i:i + chunk_size]
+                        print(chunk)
+                        client_socket.sendall(chunk.encode("utf-8"))
 
-                message = self.actions(received_message)
-
-                chunk_size = 1024
-                for i in range(0, len(message), chunk_size):
-                    chunk = message[i:i + chunk_size]
-                    print(chunk)
-                    client_socket.sendall(chunk.encode("utf-8"))
-
-                # Send the end indicator
-                client_socket.sendall("END".encode("utf-8"))
+                    # Send the end indicator
+                    client_socket.sendall("END".encode("utf-8"))
 
         except Exception as e:
             logger.error(f"Error handling client: {e}")
