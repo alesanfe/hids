@@ -11,8 +11,6 @@ from src.main.python.logger import Logger
 from src.main.python.monthly_report import compilar_informe_mensual_por_dia
 from src.main.python.repository import Repository
 
-#logger = Logger()
-
 class Server:
     """
     This class implements a simple TCP server that listens for incoming connections
@@ -42,7 +40,7 @@ class Server:
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.bind((self.host, self.port))
         self.server_socket.listen(5)  # Increased the number of connections in the queue
-
+        logger = Logger()
         #logger.info(f"Server listening on {self.host}:{self.port}")
 
         queue_for_scheduler = Queue()
@@ -50,7 +48,7 @@ class Server:
 
         # Ejecuta self.repository.all_files() en segundo plano cada 10 segundos
         schedule.every(30).seconds.do(lambda: self.execute_non_blocking(self.repository.all_files))
-        schedule.every(1).months.do(lambda: self.execute_non_blocking(compilar_informe_mensual_por_dia))
+        #schedule.every(1).months.do(lambda: self.execute_non_blocking(compilar_informe_mensual_por_dia))
 
         while True:
             client_socket, addr = self.server_socket.accept()  # Accept incoming connection

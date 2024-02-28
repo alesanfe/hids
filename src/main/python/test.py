@@ -53,11 +53,13 @@ class Test:
                             file_path = os.path.join(dir_full_path, file)
                             os.remove(file_path)
                         os.rmdir(dir_path)
+        with open("../logs/9999-99-99_error_log.txt", 'w') as archivo:
+            archivo.truncate()
         print("Carpetas generadas por el test borradas.")
 
     def modificar_archivo(self, carpeta, archivo):
         # Modificar un archivo dentro de una carpeta específica
-        archivo_path = os.path.join(f"../resources/test_folder_{carpeta}", f"file_{archivo}.txt")
+        archivo_path = os.path.join(f"../resources/test_folder_{carpeta}", f"file_{carpeta}_{archivo}.txt")
 
         if os.path.exists(archivo_path):
             with open(archivo_path, "a", encoding='utf-8') as archivo:
@@ -67,7 +69,7 @@ class Test:
 
     def mirar_logs(self):
         try:
-            with open("../logs/9999-99-99_error_test.txt", 'r') as file:
+            with open("../logs/9999-99-99_error_log.txt", 'r') as file:
                 lineas = file.readlines()
                 cantidad_lineas = len(lineas)
                 return cantidad_lineas
@@ -84,9 +86,12 @@ class Test:
         repository = Repository(self.user, self.password)
         repository.load_data()
         archivo = random.randint(1, cantidad_archivos)
-        self.modificar_archivo(random.randint(1, cantidad_carpetas), archivo)
-        repository.one_file("file_{archivo}")
+        carpeta=random.randint(1, cantidad_carpetas)
+        self.modificar_archivo(carpeta, archivo)
+        repository.one_file(f"file_{carpeta}_{archivo}.txt")
+        print(f"file_{carpeta}_{archivo}.txt")
         result = self.mirar_logs()
+        print(result)
         if result == 1:
             print("Solo se ha modificado un archivo.")
         else:
