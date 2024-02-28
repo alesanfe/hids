@@ -87,6 +87,7 @@ class Test:
         carpeta=random.randint(1, self.cantidad_carpetas)
         self.modificar_archivo(carpeta, archivo)
         repository.one_file(f"file_{carpeta}_{archivo}.txt")
+        pasado = False
 
         result = self.mirar_logs()
 
@@ -96,13 +97,16 @@ class Test:
         print(f"\n{Fore.CYAN}{'=' * 40}{Style.RESET_ALL}")
         print(f"{Fore.YELLOW}Archivo modificado:{Style.RESET_ALL} file_{carpeta}_{archivo}.txt")
         print(f"{Fore.CYAN}{'=' * 40}{Style.RESET_ALL}\n")
+        print(result)
         if result == 1:
             print(f"{Fore.GREEN}Solo se ha modificado un archivo.{Style.RESET_ALL}")
+            pasado = True
         else:
             print(f"{Fore.RED}El test ha fallado.{Style.RESET_ALL}")
         print("#@#@#@#@#@#@#@#@#@")
 
         self.borrar_archivos_y_carpetas()
+        return pasado
 
     def test2_modificar_todo_con_all_files(self):
         self.generar_archivos_y_carpetas()
@@ -112,6 +116,8 @@ class Test:
             for j in range(1, self.cantidad_archivos + 1):
                 self.modificar_archivo(i, j)
         repository.all_files()
+        pasado = False
+
         result = self.mirar_logs()
 
         print("#@#@#@#@#@#@#@#@#@")
@@ -119,11 +125,13 @@ class Test:
         print("#@#@#@#@#@#@#@#@#@")
         if result == self.cantidad_archivos * self.cantidad_carpetas:
             print(f"{Fore.GREEN}Se han modificado {result} archivos, el test es correcto.{Style.RESET_ALL}")
+            pasado = True
         else:
             print(f"{Fore.RED}El test ha fallado.{Style.RESET_ALL}")
         print("#@#@#@#@#@#@#@#@#@")
 
         self.borrar_archivos_y_carpetas()
+        return pasado
 
     def test3_modificar_un_archivo_con_all_files(self):
         self.generar_archivos_y_carpetas()
@@ -133,6 +141,7 @@ class Test:
         carpeta = random.randint(1, self.cantidad_carpetas)
         self.modificar_archivo(carpeta, archivo)
         repository.all_files()
+        pasado = False
 
         result = self.mirar_logs()
 
@@ -144,11 +153,13 @@ class Test:
         print(f"{Fore.CYAN}{'=' * 40}{Style.RESET_ALL}\n")
         if result == 1:
             print(f"{Fore.GREEN}Solo se ha modificado un archivo.{Style.RESET_ALL}")
+            pasado = True
         else:
             print(f"{Fore.RED}El test ha fallado.{Style.RESET_ALL}")
         print("#@#@#@#@#@#@#@#@#@")
 
         self.borrar_archivos_y_carpetas()
+        return pasado
 
     def test4_modificar_cero_archivos_con_one_file(self):
         self.generar_archivos_y_carpetas()
@@ -158,17 +169,20 @@ class Test:
         carpeta = random.randint(1, self.cantidad_carpetas)
         repository.one_file(f"file_{carpeta}_{archivo}.txt")
         result = self.mirar_logs()
+        pasado = False
 
         print("#@#@#@#@#@#@#@#@#@")
         print("Test que utiliza la función one_file y no se modifica ningún archivo")
         print("#@#@#@#@#@#@#@#@#@")
         if result == 0:
             print(f"{Fore.GREEN}No se ha modificado ningún archivo.{Style.RESET_ALL}")
+            pasado = True
         else:
             print(f"{Fore.RED}El test ha fallado.{Style.RESET_ALL}")
         print("#@#@#@#@#@#@#@#@#@")
 
         self.borrar_archivos_y_carpetas()
+        return pasado
 
     def test5_modificar_cero_archivos_con_all_files(self):
         self.generar_archivos_y_carpetas()
@@ -176,51 +190,42 @@ class Test:
         repository.load_data()
         repository.all_files()
         result = self.mirar_logs()
+        pasado=False
 
         print("#@#@#@#@#@#@#@#@#@")
         print("Test que utiliza la función all_files, no se modifica ningún archivo.")
         print("#@#@#@#@#@#@#@#@#@")
         if result == 0:
             print(f"{Fore.GREEN}No se ha modificado ningún archivo.{Style.RESET_ALL}")
+            pasado = True
         else:
             print(f"{Fore.RED}El test ha fallado.{Style.RESET_ALL}")
         print("#@#@#@#@#@#@#@#@#@")
 
         self.borrar_archivos_y_carpetas()
+        return pasado
 
     def run_tests(self):
         try:
-            logger = Logger(is_test=True)
             test_instance = Test(self.cantidad_carpetas, self.cantidad_archivos)
 
-            test_instance.test1_modificacion_un_archivo_con_one_file()
-            test_instance.test2_modificar_todo_con_all_files()
-            test_instance.test3_modificar_un_archivo_con_all_files()
-            test_instance.test4_modificar_cero_archivos_con_one_file()
-            test_instance.test5_modificar_cero_archivos_con_all_files()
+            test1=test_instance.test1_modificacion_un_archivo_con_one_file()
+            test2=test_instance.test2_modificar_todo_con_all_files()
+            test3=test_instance.test3_modificar_un_archivo_con_all_files()
+            test4=test_instance.test4_modificar_cero_archivos_con_one_file()
+            test5=test_instance.test5_modificar_cero_archivos_con_all_files()
 
             print("\n#@#@#@#@#@#@#@#@#@")
             print("Resumen de los Tests:")
             print("#@#@#@#@#@#@#@#@#@")
             print(f"{Fore.CYAN}{'=' * 40}{Style.RESET_ALL}")
 
-            # Verificar si todos los tests han pasado
-            tests_pasados = (
-                    test_instance.mirar_logs() == 1 and
-                    test_instance.mirar_logs() == self.cantidad_archivos * self.cantidad_carpetas and
-                    test_instance.mirar_logs() == 1 and
-                    test_instance.mirar_logs() == 0 and
-                    test_instance.mirar_logs() == 0
-            )
-
-            if tests_pasados:
+            if test1 and test2 and test3 and test4 and test5:
                 print(f"{Fore.GREEN}Todos los tests han pasado correctamente.{Style.RESET_ALL}")
             else:
                 print(f"{Fore.RED}Al menos un test ha fallado.{Style.RESET_ALL}")
 
             print(f"{Fore.CYAN}{'=' * 40}{Style.RESET_ALL}\n")
-
-            return tests_pasados
 
         except Exception as e:
             print(f"Ocurrió un error al ejecutar los tests: {e}")
@@ -228,11 +233,8 @@ class Test:
 
 
 if __name__ == "__main__":
-
+    logger = Logger(is_test=True)
     test_instance = Test(3, 5)
+
     resultado_tests = test_instance.run_tests()
 
-    if resultado_tests:
-        print("¡Todos los tests han pasado!")
-    else:
-        print("Al menos un test ha fallado.")
