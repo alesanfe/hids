@@ -1,3 +1,4 @@
+import os
 import socket
 import threading
 import schedule
@@ -59,15 +60,42 @@ class Server:
             while True:
                 schedule.run_pending()
                 data = client_socket.recv(1024)  # Receive data from the client
+
+
                 if not data:
                     break  # If no data, the client has closed the connection
 
                 received_message = data.decode()
                 logger.info(f"Received message from {client_socket.getpeername()}: {received_message}")
 
-                message = self.repository.one_file(received_message)
-                client_socket.sendall(str(message).encode("utf-8"))
+                message = self.actions(received_message)
+
+                chunk_size = 1024
+                for i in range(0, len(message), chunk_size):
+                    chunk = message[i:i + chunk_size]
+                    print(chunk)
+                    client_socket.sendall(chunk.encode("utf-8"))
+
+                # Send the end indicator
+                client_socket.sendall("END".encode("utf-8"))
+
         except Exception as e:
-            logger.info(f"Error handling client: {e}")
+            logger.error(f"Error handling client: {e}")
         finally:
             client_socket.close()
+
+    def actions(self, received_message):
+        print(received_message.startswith("log"))
+        if received_message.startswith("all_files"):
+            message = "|".join([file for _, _, aux_files in os.walk("../resources") for file in aux_files if "." in file])
+        elif received_message.startswith("all_logs"):
+            message = "|".join(os.listdir("../logs"))
+        elif received_message.startswith("file"):
+            file = received_message[5:]
+            message = str(self.repository.one_file(file))
+        elif received_message.startswith("log"):
+            file = received_message[4:]
+            path_element = os.path.join("../logs", file)
+            with open(path_element, 'r', encoding='utf-8') as file:
+                message = file.read()
+        return message

@@ -4,7 +4,7 @@ from tkinter import Frame
 import customtkinter as ctk
 
 from src.main.python.client import Client
-from src.main.python.logger import Logger
+
 
 class InterfaceHIDS:
     DEFAULT_GEOMETRY = "1250x580"
@@ -13,20 +13,23 @@ class InterfaceHIDS:
     VALUES_APPEARANCE = ["Dark", "Light"]
     TERMINAL_FONT = "Consolas"
 
-    def __init__(self, host, port, logs_path="../logs", files_path="../resources") -> None:
+    def __init__(self, host, port) -> None:
         """
         Initializes the InterfaceHIDS class.
 
         Args:
-            logs_path (str): Path to the logs directory.
-            files_path (str): Path to the resources directory.
+            host (str): Hostname or IP address of the server.
+            port (int): Port number to establish a connection.
         """
         self.root = ctk.CTk()
-        self.logs = os.listdir(logs_path)
-        self.files = [file for _, _, aux_files in os.walk(files_path) for file in aux_files if "." in file]
         self.client = Client(host, port)
         self.client.connect()
 
+        self.client.send_message("all_logs")
+        self.logs = self.client.receive_message().split("|")
+
+        self.client.send_message("all_files")
+        self.files = self.client.receive_message().split("|")
 
         self.console = ctk.CTkScrollableFrame(self.root, width=300, height=700)
         self.console.grid(row=0, column=1, padx=(20, 20), pady=(20, 0), sticky="nsew")
@@ -122,16 +125,16 @@ class InterfaceHIDS:
         """
         for widget in self.console.winfo_children():
             widget.destroy()
-        ruta_elemento = os.path.join("../logs", file)
-        with open(ruta_elemento, 'r', encoding='utf-8') as archivo:
-            contenido = archivo.read()
-            title_label = ctk.CTkLabel(self.console, text=file,
+        os.path.join("../logs", file)
+        self.client.send_message(f"log {file}")
+        contenido = self.client.receive_message()
+        title_label = ctk.CTkLabel(self.console, text=file,
                                        font=ctk.CTkFont(family=self.TERMINAL_FONT, size=20, weight="bold"))
-            title_label.pack(side="top", anchor="w")
-            contenido_label = ctk.CTkTextbox(self.console, width=2000, height=700,
+        title_label.pack(side="top", anchor="w")
+        content_label = ctk.CTkTextbox(self.console, width=2000, height=700,
                                            font=ctk.CTkFont(family=self.TERMINAL_FONT, size=15))
-            contenido_label.pack(side="top", anchor="w")
-            contenido_label.insert(ctk.END, contenido)
+        content_label.pack(side="top", anchor="w")
+        content_label.insert(ctk.END, contenido)
 
     def create_check_integrity_buttons(self):
         """
@@ -159,12 +162,13 @@ class InterfaceHIDS:
         title_label = ctk.CTkLabel(self.console, text=file,
                                    font=ctk.CTkFont(family=self.TERMINAL_FONT, size=20, weight="bold"))
         title_label.pack(side="top", anchor="w")
-        contenido_label = ctk.CTkTextbox(self.console, width=2000, height=700,
+        content_label = ctk.CTkTextbox(self.console, width=2000, height=700,
                                        font=ctk.CTkFont(family=self.TERMINAL_FONT, size=15))
-        contenido_label.pack(side="top", anchor="w")
-        self.client.send_message(file)
-        message = "Not Modified" if bool(self.client.receive_message()) else "Modified"
-        contenido_label.insert(ctk.INSERT, message)
+        content_label.pack(side="top", anchor="w")
+        self.client.send_message(f"file {file}")
+        message = "Not Modified" if self.client.receive_message() == "False" else "Modified"
+        print(message)
+        content_label.insert(ctk.INSERT, message)
 
     def change_appearance_mode_event(self, mode: str) -> None:
         """
@@ -175,4 +179,5 @@ class InterfaceHIDS:
         """
         self.set_appearance_mode(mode)
         ctk.set_appearance_mode(mode)
+
 

@@ -7,6 +7,7 @@ from src.main.python.server import Server
 if __name__ == '__main__':
     config = ConfigParser()
     config.read("config.ini")
+
     # SERVER
     host = config.get("SERVER", "host")
     port = config.get("SERVER", "port")

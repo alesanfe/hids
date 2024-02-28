@@ -45,7 +45,13 @@ class Client:
             raise ConnectionError("Connection not established. Call connect() first.")
 
         try:
-            message = self.client_socket.recv(1024).decode()
+            message = ""
+            while True:
+                data = self.client_socket.recv(1024).decode()  # Receive data from the client
+                if data == "END":
+                    break  # If no data, the client has closed the connection
+                message += data
+
             print(f"Received message from server: {message}")
             return message
         except Exception as e:

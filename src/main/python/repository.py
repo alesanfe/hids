@@ -225,6 +225,7 @@ class Repository:
             bool: True if the file has been modified, False otherwise.
         """
         if node.hash != "" and node.hash is not None:
+            print(node.hash, get_hash(node.path, node.created_at))
             if node.hash != get_hash(node.path, node.created_at):
                 logger.error("File {} has been modified".format(node.path))
                 return True
@@ -236,4 +237,4 @@ class Repository:
         """
         Deletes all nodes from the hierarchical structure.
         """
-        HashNode.nodes.all().delete()
+        db.cypher_query("MATCH(n) DETACH DELETE n")
