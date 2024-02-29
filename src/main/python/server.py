@@ -8,6 +8,7 @@ from typing import Callable
 import schedule
 import select
 
+from src.main.python.logger import load_logger
 from src.main.python.monthly_report import compile_monthly_report_by_day
 from src.main.python.repository import Repository
 
