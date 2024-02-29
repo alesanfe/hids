@@ -1,0 +1,3 @@
+MP4, AVI, MKV: Common video formats.
+MOV: Apple QuickTime format.
+WMV: Windows Media format.

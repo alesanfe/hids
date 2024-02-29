@@ -1,1 +1,0 @@
-ZIP, RAR, 7Z: Archive files containing one or more compressed files for space-saving and easy transfer.

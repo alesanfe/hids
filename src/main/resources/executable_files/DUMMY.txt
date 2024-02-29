@@ -1,0 +1,2 @@
+EXE: Executable files on Windows.
+APP: Applications on MacOS.

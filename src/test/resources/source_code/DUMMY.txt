@@ -1,3 +1,0 @@
-C: C programming language source files.
-PY: Python source files.
-HTML, CSS, JS: Web files for HTML, Cascading Style Sheets, and JavaScript.
