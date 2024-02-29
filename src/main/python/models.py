@@ -1,6 +1,6 @@
 from datetime import datetime
-from neomodel import StructuredNode, StringProperty, RelationshipTo, RelationshipFrom, DateProperty, config, db, One, \
-    ZeroOrOne
+
+from neomodel import StructuredNode, StringProperty, RelationshipTo, DateProperty, ZeroOrOne
 
 
 class HashNode(StructuredNode):

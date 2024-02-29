@@ -1,7 +1,5 @@
 import socket
 
-from src.main.python.logger import Logger
-
 
 class Client:
     """

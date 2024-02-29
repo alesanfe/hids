@@ -5,12 +5,12 @@ import threading
 import time
 from typing import Callable
 
-import select
 import schedule
+import select
 
-from src.main.python.logger import Logger
 from src.main.python.monthly_report import compile_monthly_report_by_day
 from src.main.python.repository import Repository
+
 
 class Server:
     """
@@ -41,7 +41,7 @@ class Server:
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.bind((self.host, self.port))
         self.server_socket.listen(5)  # Increased the number of connections in the queue
-        logger=Logger()
+        load_logger()
         threading.Thread(target=self.print_scheduler).start()
 
         # Execute self.repository.all_files() in the background every 10 seconds
@@ -49,7 +49,7 @@ class Server:
         schedule.every(30).days.do(lambda: self.execute_non_blocking(compile_monthly_report_by_day))
 
         while True:
-            client_socket, addr = self.server_socket.accept()  # Accept incoming connection
+            client_socket, _ = self.server_socket.accept()  # Accept incoming connection
 
             # Handle communication with the client in a separate thread
             threading.Thread(target=self.handle_client, args=(client_socket,)).start()

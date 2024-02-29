@@ -1,5 +1,4 @@
 import os
-from tkinter import Frame
 
 import customtkinter as ctk
 
@@ -209,6 +208,8 @@ class InterfaceHIDS:
         content_label.pack(side="top", anchor="w")
 
         content_label.insert(ctk.INSERT, message)
+        content_label.configure(state=ctk.DISABLED)
+
         content_label.configure(state=ctk.DISABLED)
 
 
