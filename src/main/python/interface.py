@@ -83,11 +83,11 @@ class InterfaceHIDS:
         Creates the sidebar components.
         """
         sidebar_frame = ctk.CTkFrame(self.root, corner_radius=0, border_color="Red")
-        sidebar_frame.grid(row=0, column=0, rowspan=4, sticky="nsew")
-        sidebar_frame.grid_rowconfigure(1, weight=1)
+        sidebar_frame.grid(row=0, column=0, sticky="nsew")
+
 
         self.tabview = ctk.CTkTabview(sidebar_frame)
-        self.tabview.grid(padx=(20, 0), pady=(20, 0), sticky="nsew")
+        self.tabview.grid(padx=(0, 0), pady=(0, 0), sticky="nsew")
         self.tabview.add("Log History")
         self.tabview.add("Integrity Verification")
         self.tabview.add("Monthly Reports")
@@ -102,7 +102,7 @@ class InterfaceHIDS:
         """
         frame = self.tabview.tab("Log History")
         logs_frame = ctk.CTkScrollableFrame(frame)
-        logs_frame.grid(row=1, column=0, padx=20, pady=10, sticky="nsew")
+        logs_frame.grid(row=1, column=0, padx=40, pady=10, sticky="nsew")
 
         for index, name in enumerate(self.logs):
             log_button = ctk.CTkButton(logs_frame, text=name, fg_color="transparent",
@@ -117,6 +117,7 @@ class InterfaceHIDS:
             file (str): The selected log file.
         """
         log_window = ctk.CTkToplevel()
+        log_window.resizable(False, False)
 
         os.path.join("../logs", file)
         self.client.send_message(f"log {file}")
@@ -125,10 +126,12 @@ class InterfaceHIDS:
         title_label = ctk.CTkLabel(log_window, text=file,
                                    font=ctk.CTkFont(family=self.TERMINAL_FONT, size=20, weight="bold"))
         title_label.pack(side="top", anchor="w")
-        content_label = ctk.CTkTextbox(log_window, width=1000, height=700,
+        content_label = ctk.CTkTextbox(log_window, width=1000, height=500,
                                        font=ctk.CTkFont(family=self.TERMINAL_FONT, size=15))
         content_label.pack(side="top", anchor="w")
+
         content_label.insert(ctk.END, content)
+        content_label.configure(state=ctk.DISABLED)
 
     def create_check_integrity_buttons(self) -> None:
         """
@@ -137,7 +140,7 @@ class InterfaceHIDS:
         frame = self.tabview.tab("Integrity Verification")
 
         files_frame = ctk.CTkScrollableFrame(frame)
-        files_frame.grid(row=1, column=0, padx=20, pady=10, sticky="nsew")
+        files_frame.grid(row=1, column=0, padx=40, pady=10, sticky="nsew")
 
         for index, name in enumerate(self.files):
             files_button = ctk.CTkButton(files_frame, text=name, fg_color="transparent",
@@ -151,22 +154,24 @@ class InterfaceHIDS:
         Args:
             file (str): The selected file for integrity check.
         """
-        file_frame = ctk.CTkToplevel()
+        file_window = ctk.CTkToplevel()
+        file_window.resizable(False, False)
 
         self.client.send_message(f"file {file}")
         message = self.client.receive_message()
 
         message = "Not Modified" if message == "False" else "Modified"
 
-        title_label = ctk.CTkLabel(file_frame, text=file,
+        title_label = ctk.CTkLabel(file_window, text=file,
                                    font=ctk.CTkFont(family=self.TERMINAL_FONT, size=20, weight="bold"))
         title_label.pack(side="top", anchor="w")
 
-        content_label = ctk.CTkTextbox(file_frame, width=1000, height=700,
+        content_label = ctk.CTkTextbox(file_window, width=500, height=200,
                                        font=ctk.CTkFont(family=self.TERMINAL_FONT, size=15))
         content_label.pack(side="top", anchor="w")
 
         content_label.insert(ctk.INSERT, message)
+        content_label.configure(state=ctk.DISABLED)
 
     def create_reports_buttons(self) -> None:
         """
@@ -175,7 +180,7 @@ class InterfaceHIDS:
         frame = self.tabview.tab("Monthly Reports")
 
         files_frame = ctk.CTkScrollableFrame(frame)
-        files_frame.grid(row=1, column=0, padx=20, pady=10, sticky="nsew")
+        files_frame.grid(row=1, column=0, padx=40, pady=10, sticky="nsew")
 
         for index, name in enumerate(self.reports):
             files_button = ctk.CTkButton(files_frame, text=name, fg_color="transparent",
@@ -189,19 +194,22 @@ class InterfaceHIDS:
         Args:
             file (str): The selected file for integrity check.
         """
-        file_frame = ctk.CTkToplevel()
+        report_window = ctk.CTkToplevel()
+        report_window.resizable(False, False)
 
         self.client.send_message(f"report {file}")
         message = self.client.receive_message()
 
-        title_label = ctk.CTkLabel(file_frame, text=file,
+        title_label = ctk.CTkLabel(report_window, text=file,
                                    font=ctk.CTkFont(family=self.TERMINAL_FONT, size=20, weight="bold"))
         title_label.pack(side="top", anchor="w")
 
-        content_label = ctk.CTkTextbox(file_frame, width=1000, height=700,
+        content_label = ctk.CTkTextbox(report_window, width=1000, height=500,
                                        font=ctk.CTkFont(family=self.TERMINAL_FONT, size=15))
         content_label.pack(side="top", anchor="w")
 
         content_label.insert(ctk.INSERT, message)
+        content_label.configure(state=ctk.DISABLED)
+
 
 

@@ -8,6 +8,7 @@ from typing import Callable
 import select
 import schedule
 
+from src.main.python.logger import Logger
 from src.main.python.monthly_report import compile_monthly_report_by_day
 from src.main.python.repository import Repository
 
@@ -40,7 +41,7 @@ class Server:
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.bind((self.host, self.port))
         self.server_socket.listen(5)  # Increased the number of connections in the queue
-
+        logger=Logger()
         threading.Thread(target=self.print_scheduler).start()
 
         # Execute self.repository.all_files() in the background every 10 seconds

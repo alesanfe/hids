@@ -99,10 +99,10 @@ class Test:
         print(f"{Fore.CYAN}{'=' * 40}{Style.RESET_ALL}\n")
         print(result)
         if result == 1:
-            print(f"{Fore.GREEN}Solo se ha modificado un archivo.{Style.RESET_ALL}")
+            print(f"{Fore.GREEN}TEST PASSED: Solo se ha modificado un archivo.{Style.RESET_ALL}")
             pasado = True
         else:
-            print(f"{Fore.RED}El test ha fallado.{Style.RESET_ALL}")
+            print(f"{Fore.RED}TEST FAILED: El test ha fallado.{Style.RESET_ALL}")
         print("#@#@#@#@#@#@#@#@#@")
 
         self.borrar_archivos_y_carpetas()
@@ -124,10 +124,10 @@ class Test:
         print("Test que utiliza la función all_files y se modifican todos archivos.")
         print("#@#@#@#@#@#@#@#@#@")
         if result == self.cantidad_archivos * self.cantidad_carpetas:
-            print(f"{Fore.GREEN}Se han modificado {result} archivos, el test es correcto.{Style.RESET_ALL}")
+            print(f"{Fore.GREEN}TEST PASSED: Se han modificado {result} archivos, el test es correcto.{Style.RESET_ALL}")
             pasado = True
         else:
-            print(f"{Fore.RED}El test ha fallado.{Style.RESET_ALL}")
+            print(f"{Fore.RED}TEST FAILED: El test ha fallado.{Style.RESET_ALL}")
         print("#@#@#@#@#@#@#@#@#@")
 
         self.borrar_archivos_y_carpetas()
@@ -152,10 +152,10 @@ class Test:
         print(f"{Fore.YELLOW}Archivo modificado:{Style.RESET_ALL} file_{carpeta}_{archivo}.txt")
         print(f"{Fore.CYAN}{'=' * 40}{Style.RESET_ALL}\n")
         if result == 1:
-            print(f"{Fore.GREEN}Solo se ha modificado un archivo.{Style.RESET_ALL}")
+            print(f"{Fore.GREEN}TEST PASSED: Solo se ha modificado un archivo.{Style.RESET_ALL}")
             pasado = True
         else:
-            print(f"{Fore.RED}El test ha fallado.{Style.RESET_ALL}")
+            print(f"{Fore.RED}TEST FAILED: El test ha fallado.{Style.RESET_ALL}")
         print("#@#@#@#@#@#@#@#@#@")
 
         self.borrar_archivos_y_carpetas()
@@ -175,10 +175,10 @@ class Test:
         print("Test que utiliza la función one_file y no se modifica ningún archivo")
         print("#@#@#@#@#@#@#@#@#@")
         if result == 0:
-            print(f"{Fore.GREEN}No se ha modificado ningún archivo.{Style.RESET_ALL}")
+            print(f"{Fore.GREEN}TEST PASSED: No se ha modificado ningún archivo.{Style.RESET_ALL}")
             pasado = True
         else:
-            print(f"{Fore.RED}El test ha fallado.{Style.RESET_ALL}")
+            print(f"{Fore.RED}TEST FAILED: El test ha fallado.{Style.RESET_ALL}")
         print("#@#@#@#@#@#@#@#@#@")
 
         self.borrar_archivos_y_carpetas()
@@ -196,10 +196,10 @@ class Test:
         print("Test que utiliza la función all_files, no se modifica ningún archivo.")
         print("#@#@#@#@#@#@#@#@#@")
         if result == 0:
-            print(f"{Fore.GREEN}No se ha modificado ningún archivo.{Style.RESET_ALL}")
+            print(f"{Fore.GREEN}TEST PASSED: No se ha modificado ningún archivo.{Style.RESET_ALL}")
             pasado = True
         else:
-            print(f"{Fore.RED}El test ha fallado.{Style.RESET_ALL}")
+            print(f"{Fore.RED}TEST FAILED: El test ha fallado.{Style.RESET_ALL}")
         print("#@#@#@#@#@#@#@#@#@")
 
         self.borrar_archivos_y_carpetas()
@@ -221,9 +221,9 @@ class Test:
             print(f"{Fore.CYAN}{'=' * 40}{Style.RESET_ALL}")
 
             if test1 and test2 and test3 and test4 and test5:
-                print(f"{Fore.GREEN}Todos los tests han pasado correctamente.{Style.RESET_ALL}")
+                print(f"{Fore.GREEN}TESTS PASSED: Todos los tests han pasado correctamente.{Style.RESET_ALL}")
             else:
-                print(f"{Fore.RED}Al menos un test ha fallado.{Style.RESET_ALL}")
+                print(f"{Fore.RED}TESTS FAILED: Al menos un test ha fallado.{Style.RESET_ALL}")
 
             print(f"{Fore.CYAN}{'=' * 40}{Style.RESET_ALL}\n")
 

@@ -87,7 +87,7 @@ def get_non_integrated_files_by_day(log_list: List[str]) -> Set[Tuple[str, str]]
 
 def compile_monthly_report_by_day() -> None:
     """
-    Compile a monthly report by day, creating a report file in the 'monthly_reports' directory.
+    Compile a monthly report by day, creating a report file in the 'reports' directory.
     The report includes information about currently non-integrated files, non-integrated files during the month,
     and details about the last daily log.
     """
