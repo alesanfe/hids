@@ -1,15 +1,31 @@
 import hashlib
 from configparser import ConfigParser
+from datetime import datetime
 
-def select_hash_algorithm(day):
+
+def select_hash_algorithm(day: int) -> str:
     """
     Selects the hash algorithm based on the day of the month.
+
+    Args:
+        day (int): The day of the month.
+
+    Returns:
+        str: The selected hash algorithm ('sha512' or 'sha3_384').
     """
     return 'sha512' if day % 2 == 0 else 'sha3_384'
 
-def calculate_file_hash(file_path, day):
+
+def calculate_file_hash(file_path: str, day: int) -> str:
     """
     Calculates the hash of a file using the selected algorithm.
+
+    Args:
+        file_path (str): The path to the file.
+        day (int): The day of the month.
+
+    Returns:
+        str: The calculated hash value.
     """
     calculated_hash = hashlib.new(select_hash_algorithm(day))
 
@@ -19,9 +35,18 @@ def calculate_file_hash(file_path, day):
 
     return calculated_hash.hexdigest()
 
-def calculate_mac(hash_value, token, day):
+
+def calculate_mac(hash_value: str, token: str, day: int) -> str:
     """
     Calculates the Message Authentication Code (MAC) using the hash and token.
+
+    Args:
+        hash_value (str): The hash value of the file.
+        token (str): The token read from the configuration file.
+        day (int): The day of the month.
+
+    Returns:
+        str: The calculated MAC value.
     """
     calculated_mac = hashlib.new(select_hash_algorithm(day + 1))
 
@@ -32,9 +57,17 @@ def calculate_mac(hash_value, token, day):
 
     return calculated_mac.hexdigest()
 
-def get_hash(name, date_today):
+
+def get_hash(name: str, date_today: datetime) -> str:
     """
     Calculates the hash of a file using different algorithms and applies a Message Authentication Code (MAC).
+
+    Args:
+        name (str): The name or path of the file.
+        date_today (datetime): The current date.
+
+    Returns:
+        str: The final hash value after applying MAC.
     """
     day = int(date_today.strftime('%d'))
 

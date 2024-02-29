@@ -1,17 +1,33 @@
 import socket
 
+from src.main.python.logger import Logger
+
+
 class Client:
-    def __init__(self, host, port):
+    """
+    The Client class facilitates communication with a server using a socket connection.
+    """
+
+    def __init__(self, host: str, port: int) -> None:
+        """
+        Initializes a Client instance with the specified host and port.
+
+        Args:
+            host (str): Hostname or IP address of the server.
+            port (int): Port number for the connection.
+        """
         self.host = host
         self.port = port
         self.client_socket = None
 
-    def connect(self):
+    def connect(self) -> None:
+        """
+        Establishes a connection to the server.
+        """
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client_socket.connect((self.host, self.port))
-        print(f"Connection established with server at {self.host}:{self.port}")
 
-    def send_message(self, message):
+    def send_message(self, message: str) -> None:
         """
         Sends a message to the connected server.
 
@@ -26,12 +42,11 @@ class Client:
 
         try:
             self.client_socket.sendall(message.encode())
-            print(f"Sent message to server: {message}")
             # Add any additional logic here, such as waiting for a response from the server
-        except Exception as e:
-            print(f"Error sending message: {e}")
+        except Exception:
+            pass
 
-    def receive_message(self):
+    def receive_message(self) -> str:
         """
         Receives a message from the connected server.
 
@@ -52,16 +67,15 @@ class Client:
                     break  # If no data, the client has closed the connection
                 message += data
 
-            print(f"Received message from server: {message}")
             return message
-        except Exception as e:
-            print(f"Error receiving message: {e}")
+        except Exception:
+            pass
 
-    def close(self):
+    def close(self) -> None:
         """
         Closes the connection with the server.
         """
         if self.client_socket:
             self.client_socket.close()
-            print("Connection closed.")
+
 

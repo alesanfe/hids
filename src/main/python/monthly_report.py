@@ -4,6 +4,7 @@ import re
 from datetime import datetime
 from typing import List, Set, Tuple
 
+
 def process_daily_logs() -> List[str]:
     """
     Retrieve a list of log files for the previous month.
@@ -29,6 +30,7 @@ def process_daily_logs() -> List[str]:
 
     return logs_of_the_month
 
+
 def get_non_integrated_files(last_log: str) -> List[str]:
     """
     Given the path to the latest log file, extract the names of non-integrated files.
@@ -49,10 +51,11 @@ def get_non_integrated_files(last_log: str) -> List[str]:
                     file_name = file_match.group(1)
                     non_integrated_files.append(os.path.basename(file_name))
 
-    except Exception as e:
-        print(f"Error opening the file: {e}")
+    except Exception:
+        pass
 
     return non_integrated_files
+
 
 def get_non_integrated_files_by_day(log_list: List[str]) -> Set[Tuple[str, str]]:
     """
@@ -76,10 +79,11 @@ def get_non_integrated_files_by_day(log_list: List[str]) -> Set[Tuple[str, str]]
                     if file_match:
                         file_name = file_match.group(1)
                         non_integrated_files.add((file_name, date))
-        except Exception as e:
-            print(f"Error opening the file: {e}")
+        except Exception:
+            pass
 
     return non_integrated_files
+
 
 def compile_monthly_report_by_day() -> None:
     """
@@ -92,8 +96,8 @@ def compile_monthly_report_by_day() -> None:
     non_integrated_files = get_non_integrated_files_by_day(log_list)
     sorted_files = sorted(list(non_integrated_files), key=lambda x: x[0])
 
-    if not os.path.exists("../monthly_reports"):
-        os.makedirs("../monthly_reports")
+    if not os.path.exists("../reports"):
+        os.makedirs("../reports")
 
     current_date = datetime.now()
     current_month = current_date.month
@@ -108,7 +112,7 @@ def compile_monthly_report_by_day() -> None:
 
     # Create the name of the monthly report file
     report_name = f"Report-{previous_year:04d}_{previous_month:02d}.txt"
-    report_file_path = os.path.join("../monthly_reports/", report_name)
+    report_file_path = os.path.join("../reports/", report_name)
 
     # Write the monthly report
     with open(report_file_path, 'w', encoding='utf-8') as report_file:
@@ -132,5 +136,3 @@ def compile_monthly_report_by_day() -> None:
         report_file.write("Last Daily Log:\n")
         report_file.write("\t" + log_list[-1].replace("../logs\\", "") + "\n")
         report_file.write("=" * 50 + "\n\n")
-
-    print(f"Monthly report compiled at: {report_file_path}")

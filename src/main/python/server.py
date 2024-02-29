@@ -1,16 +1,13 @@
+import concurrent.futures
 import os
 import socket
 import threading
 import time
-from queue import Queue
-
-import schedule
-import concurrent.futures
+from typing import Callable
 
 import select
+import schedule
 
-from src.main.python.client import Client
-from src.main.python.logger import Logger
 from src.main.python.monthly_report import compile_monthly_report_by_day
 from src.main.python.repository import Repository
 
@@ -21,7 +18,7 @@ class Server:
     number of messages it has received and returns that count in its response.
     """
 
-    def __init__(self, host, port, user, password):
+    def __init__(self, host: str, port: int, user: str, password: str) -> None:
         """
         Initialize the server with the specified host and port.
 
@@ -36,7 +33,7 @@ class Server:
         self.repository.delete_all()
         self.repository.load_data()
 
-    def start(self):
+    def start(self) -> None:
         """
         Start the server listening for incoming connections.
         """
@@ -50,11 +47,13 @@ class Server:
         schedule.every(1).days.do(lambda: self.execute_non_blocking(self.repository.all_files))
         schedule.every(30).days.do(lambda: self.execute_non_blocking(compile_monthly_report_by_day))
 
-        client_socket, addr = self.server_socket.accept()  # Accept incoming connection
+        while True:
+            client_socket, addr = self.server_socket.accept()  # Accept incoming connection
 
-        self.handle_client(client_socket)
+            # Handle communication with the client in a separate thread
+            threading.Thread(target=self.handle_client, args=(client_socket,)).start()
 
-    def print_scheduler(self):
+    def print_scheduler(self) -> None:
         """
         Print "hello" every second.
         """
@@ -62,14 +61,14 @@ class Server:
             schedule.run_pending()
             time.sleep(1)
 
-    def execute_non_blocking(self, func):
+    def execute_non_blocking(self, func: Callable) -> None:
         """
         Execute a function in a separate thread.
         """
         with concurrent.futures.ThreadPoolExecutor() as executor:
             executor.submit(func)
 
-    def handle_client(self, client_socket):
+    def handle_client(self, client_socket: socket) -> None:
         """
         Handle an incoming client connection by sending a response to any messages it sends.
 
@@ -89,7 +88,6 @@ class Server:
                         break  # If no data, the client has closed the connection
 
                     received_message = data.decode()
-                    #logger.info(f"Received message from {client_socket.getpeername()}: {received_message}")
 
                     message = self.actions(received_message)
 
@@ -104,18 +102,27 @@ class Server:
                 except socket.timeout:
                     pass  # Timeout reached, continue with the next cycle
 
-        except Exception as e:
-            print(e)
-            #logger.error(f"Error handling client: {e}")
+        except Exception:
+            pass
         finally:
             client_socket.close()
 
-    def actions(self, received_message):
-        print(received_message.startswith("log"))
+    def actions(self, received_message: str) -> str:
+        """
+        Process incoming messages and perform corresponding actions.
+
+        Args:
+            received_message (str): The received message.
+
+        Returns:
+            str: The response message.
+        """
         if received_message.startswith("all_files"):
             message = "|".join([file for _, _, aux_files in os.walk("../resources") for file in aux_files if "." in file])
         elif received_message.startswith("all_logs"):
             message = "|".join(os.listdir("../logs"))
+        elif received_message.startswith("all_reports"):
+            message = "|".join(os.listdir("../reports"))
         elif received_message.startswith("file"):
             file = received_message[5:]
             message = str(self.repository.one_file(file))
@@ -124,14 +131,9 @@ class Server:
             path_element = os.path.join("../logs", file)
             with open(path_element, 'r', encoding='utf-8') as file:
                 message = file.read()
+        elif received_message.startswith("report"):
+            file = received_message[7:]
+            path_element = os.path.join("../reports", file)
+            with open(path_element, 'r', encoding='utf-8') as file:
+                message = file.read()
         return message
-
-if __name__ == "__main__":
-    server = Server("localhost", 8080, "neo4j", "12345678")
-    threading.Thread(target=server.start).start()
-    client = Client("localhost", 8080)
-    client.connect()
-    for i in range(600):
-        client.send_message("file DUMMY.txt")
-        response = client.receive_message()
-        print(response, i)

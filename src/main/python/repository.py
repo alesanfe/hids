@@ -1,11 +1,11 @@
 import os
 from datetime import datetime
+from typing import Dict, List, Optional
 
 from loguru import logger
 from neomodel import config, db
 
 from src.main.python.hashing import get_hash
-from src.main.python.logger import Logger
 from src.main.python.models import HashNode
 
 
@@ -15,12 +15,10 @@ class Repository:
     It uses a database connection specified by the provided username and password.
 
     Attributes:
-        user (str): Database username.
-        password (str): Database password.
         roots (dict): Dictionary to store root nodes for each file extension.
     """
 
-    def __init__(self, user, password):
+    def __init__(self, user: str, password: str) -> None:
         """
         Initializes a Repository instance with user and password for database connection.
 
@@ -33,7 +31,7 @@ class Repository:
         self.roots = {}
         config.DATABASE_URL = f'bolt://{user}:{password}@localhost:7687'
 
-    def load_data(self):
+    def load_data(self) -> None:
         """
         Loads data from the specified directory and organizes it into a hierarchical structure.
         """
@@ -59,7 +57,7 @@ class Repository:
                     new_node.save()
             self.add_node_sorted(root, node_list)
 
-    def group_by_extensions(self):
+    def group_by_extensions(self) -> Dict[str, List[str]]:
         """
         Groups files by their extensions in the specified directory.
 
@@ -79,7 +77,7 @@ class Repository:
                     extensions[extension] = [file_path]
         return extensions
 
-    def find_node(self, root, name):
+    def find_node(self, root: HashNode, name: str) -> HashNode:
         """
         Finds a node with the specified name in the hierarchical structure.
 
@@ -99,7 +97,7 @@ class Repository:
         else:
             return self.find_node(root.upper.single(), name)
 
-    def find_node_by_name(self, name):
+    def find_node_by_name(self, name: str) -> HashNode:
         """
         Finds a node with the specified name in the hierarchical structure.
 
@@ -113,7 +111,7 @@ class Repository:
         root = self.roots.get(extension)
         return self.find_node(root, name)
 
-    def add_node(self, root, new_node):
+    def add_node(self, root: HashNode, new_node: HashNode) -> Optional[HashNode]:
         """
         Adds a new node to the hierarchical structure.
 
@@ -142,7 +140,7 @@ class Repository:
                 self.add_node(son, new_node)
         return root
 
-    def add_node_by_name(self, name):
+    def add_node_by_name(self, name: str) -> None:
         """
         Adds a new node to the hierarchical structure based on the provided file name.
 
@@ -155,11 +153,12 @@ class Repository:
         extension = os.path.splitext(name)[-1]
         root = self.roots.get(extension)
         date = datetime.now()
-        new_node = HashNode(name=str(os.path.basename(name)), path=str(name), hash=get_hash(name, date), created_at=date).save()
+        new_node = HashNode(name=str(os.path.basename(name)), path=str(name), hash=get_hash(name, date),
+                            created_at=date).save()
         new_node.save()
         self.add_node(root, new_node)
 
-    def add_node_sorted(self, root, node_list):
+    def add_node_sorted(self, root: HashNode, node_list: List[HashNode]) -> None:
         """
         Adds a list of nodes to the hierarchical structure in a sorted order.
 
@@ -182,7 +181,7 @@ class Repository:
         self.add_node_sorted(root, left_nodes)
         self.add_node_sorted(root, right_nodes)
 
-    def get_all(self):
+    def get_all(self) -> List[HashNode]:
         """
         Retrieves all nodes from the hierarchical structure.
 
@@ -191,14 +190,14 @@ class Repository:
         """
         return HashNode.nodes.all()
 
-    def all_files(self):
+    def all_files(self) -> None:
         """
         Checks the hash value for all files in the hierarchical structure.
         """
         for node in self.get_all():
             self.check_hash(node)
 
-    def one_file(self, name):
+    def one_file(self, name: str) -> bool:
         """
         Checks the hash value for a specific file in the hierarchical structure.
 
@@ -212,7 +211,7 @@ class Repository:
         logger.info("Checking file {}".format(name))
         return self.check_hash(node)
 
-    def check_hash(self, node):
+    def check_hash(self, node: HashNode) -> bool:
         """
         Checks if the hash value of a node matches the computed hash for the associated file.
 
