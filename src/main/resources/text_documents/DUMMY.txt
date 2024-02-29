@@ -1,2 +1,0 @@
-TXT: Plain text files.
-DOCX, DOC: Microsoft Word documents.

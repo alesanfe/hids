@@ -1,4 +1,0 @@
-JPEG, JPG: Compressed image format.
-PNG: Lossless image format, supports transparent backgrounds.
-GIF: Animated images.
-BMP: Bitmap, uncompressed format.

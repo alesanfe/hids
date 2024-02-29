@@ -1,0 +1,15 @@
+==================================================
+Informe Mensual - 01/2024
+==================================================
+
+Archivos No Íntegros Actualmente:
+	- DUMMY7.txt;
+
+Archivos No Íntegros Durante el Mes:
+	- Archivo en ruta ../resources\spreedsheets\DUMMY7.txt dejó de ser íntegro el 28-01-2024;
+
+==================================================
+Último Log Diario:
+	2024-01-28_error_log.txt
+==================================================
+

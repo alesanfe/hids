@@ -1,2 +1,0 @@
-PPTX, PPT: Microsoft PowerPoint formats.
-PDF: Also used for presentations.

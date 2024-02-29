@@ -7,8 +7,9 @@ from colorama import Fore, Style  # Assuming colorama library is used
 from src.main.python.logger import load_logger
 from src.main.python.repository import Repository  # Assuming Repository class is defined
 
-
-
+# Constants
+SEPARATOR = "#@#@#@#@#@#@#@#@#@"
+RESOURCE_PATH = "../resources/"
 
 class Test:
     config = ConfigParser()
@@ -17,10 +18,6 @@ class Test:
     # DB
     user = config.get("DB", "user")
     password = config.get("DB", "password")
-
-    # Constants
-    SEPARATOR = "#@#@#@#@#@#@#@#@#@"
-    RESOURCE_PATH = "../resources/"
 
     def __init__(self, folder_quantity, file_quantity):
         self.folder_quantity = folder_quantity
