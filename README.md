@@ -26,6 +26,12 @@ To get the system up and running, it's essential to have Neo4J Desktop installed
 
 4. **Register the Software:**
    - Enter the key copied earlier to register the software. This can also be done through the menu options.
+  
+5. **Create DB:**
+   - On the GUI pulse on the market bottom and save the password.
+  ![image](https://github.com/US-SSII/SecureStorage-HIDS/assets/72869496/e9c59aff-895b-433a-8fc6-934b420cb6db)
+   - The password must be also set on the config.ini.
+   ![image](https://github.com/US-SSII/SecureStorage-HIDS/assets/72869496/195e22ff-2bb1-4e15-88fd-fa7a7af1acd5)
 
 5. **Install Project Dependencies:**
    - In a terminal, execute the following command to install the project dependencies:
