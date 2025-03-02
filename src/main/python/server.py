@@ -1,6 +1,8 @@
 import concurrent.futures
 import os
 import socket
+import ssl
+import subprocess
 import threading
 import time
 from typing import Callable
@@ -11,7 +13,6 @@ import select
 from src.main.python.logger import load_logger
 from src.main.python.monthly_report import compile_monthly_report_by_day
 from src.main.python.repository import Repository
-
 
 class Server:
     """
@@ -42,6 +43,13 @@ class Server:
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.bind((self.host, self.port))
         self.server_socket.listen(5)  # Increased the number of connections in the queue
+
+        context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+        context.load_cert_chain(certfile="../ssl/fullchain.pem", keyfile="../ssl/privkey.pem")
+        self.server_socket = context.wrap_socket(self.server_socket, server_side=True)
+
+        print(f"Server listening on {self.host}:{self.port}")
+
         load_logger()
         threading.Thread(target=self.print_scheduler).start()
 
