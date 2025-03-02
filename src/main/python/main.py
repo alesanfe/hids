@@ -16,7 +16,7 @@ if __name__ == '__main__':
     user = config.get("DB", "user")
     password = config.get("DB", "password")
 
-    server = Server(host, int(port), user, password)
+    server = Server('localhost', int(port), user, password)
     server_thread = threading.Thread(target=server.start)
     server_thread.start()
 

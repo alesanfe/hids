@@ -2,7 +2,7 @@ import os
 
 import customtkinter as ctk
 
-from src.main.python.client import Client
+from client import Client
 
 
 class InterfaceHIDS:

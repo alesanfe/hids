@@ -1,7 +1,4 @@
 import socket
-
-
-import socket
 import ssl
 
 class Client:

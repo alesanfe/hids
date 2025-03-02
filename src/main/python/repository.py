@@ -5,8 +5,8 @@ from typing import Dict, List, Optional
 from loguru import logger
 from neomodel import config, db
 
-from src.main.python.hashing import get_hash
-from src.main.python.models import HashNode
+from hashing import get_hash
+from models import HashNode
 
 
 class Repository:

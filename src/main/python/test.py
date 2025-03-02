@@ -4,8 +4,8 @@ from configparser import ConfigParser
 
 from colorama import Fore, Style  # Assuming colorama library is used
 
-from src.main.python.logger import load_logger
-from src.main.python.repository import Repository  # Assuming Repository class is defined
+from logger import load_logger
+from repository import Repository  # Assuming Repository class is defined
 
 # Constants
 SEPARATOR = "#@#@#@#@#@#@#@#@#@"
