@@ -44,9 +44,9 @@ class Server:
         self.server_socket.bind((self.host, self.port))
         self.server_socket.listen(5)  # Increased the number of connections in the queue
 
-        context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-        context.load_cert_chain(certfile="../ssl/fullchain.pem", keyfile="../ssl/privkey.pem")
-        self.server_socket = context.wrap_socket(self.server_socket, server_side=True)
+        # context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+        # context.load_cert_chain(certfile="../ssl/fullchain.pem", keyfile="../ssl/privkey.pem")
+        #self.server_socket = context.wrap_socket(self.server_socket, server_side=True)
 
         print(f"Server listening on {self.host}:{self.port}")
 
