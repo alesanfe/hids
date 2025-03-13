@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  server:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=neo4j
+      - DB_PORT=7687
+      - DB_USER=neo4j
+      - DB_PASSWORD=12345678
+      - SERVER_HOST=localhost
+      - SERVER_PORT=8080
+      - RESOURCES_PATHS=/mnt/resources
+      - TOKEN=DA248EEAFFA573DA8C323C3EB56AAF32EC6CE244E401A24C55F30C907D0BBFB5
+    depends_on:
+      neo4j:
+        condition: service_healthy  # Espera a que Neo4j esté saludable
+    networks:
+      - backend
+    volumes:
+      - C:\Users\alex0\Documents\VM:/mnt/resources
+    restart: on-failure
+
+  neo4j:
+    image: neo4j:4.3
+    environment:
+      - NEO4J_AUTH=neo4j/12345678
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    networks:
+      - backend
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7474/browser/"]
+      interval: 30s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  neo4j_data:
+  neo4j_logs:
+
+
+
+
+

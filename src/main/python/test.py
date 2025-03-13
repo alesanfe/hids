@@ -13,7 +13,7 @@ RESOURCE_PATH = "../resources/"
 
 class Test:
     config = ConfigParser()
-    config.read("config.ini")
+    config.read("config_docker.ini")
 
     # DB
     user = config.get("DB", "user")

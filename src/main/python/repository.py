@@ -18,24 +18,29 @@ class Repository:
         roots (dict): Dictionary to store root nodes for each file extension.
     """
 
-    def __init__(self, user: str, password: str) -> None:
+    def __init__(self, user: str, password: str, host: str, resources: List[str] = None) -> None:
         """
-        Initializes a Repository instance with user and password for database connection.
+        Initializes a Repository instance with username, password, and host information.
 
         Args:
             user (str): Database username.
             password (str): Database password.
+            host (str): Database host.
+            resources (List[str]): A list of directory paths where files can be found (optional).
         """
         self.user = user
         self.password = password
+        self.host = host
+        self.resources = resources if resources is not None else []
         self.roots = {}
-        config.DATABASE_URL = f'bolt://{user}:{password}@localhost:7687'
+        config.DATABASE_URL = f'bolt://{user}:{password}@{host}:7687'
 
     def load_data(self) -> None:
         """
         Loads data from the specified directory and organizes it into a hierarchical structure.
         """
         extensions = self.group_by_extensions()
+        print(extensions)
         for key, values in extensions.items():
             try:
                 root = HashNode.nodes.get(name=key)
@@ -65,16 +70,18 @@ class Repository:
             dict: A dictionary where keys are file extensions and values are lists of file paths.
         """
         extensions = {}
-        for current_path, subfolders, files in os.walk("../resources"):
-            if current_path == "../resources":
-                continue
-            for file in files:
-                extension = os.path.splitext(file)[-1]
-                file_path = os.path.join(current_path, file)
-                if extension in extensions:
-                    extensions[extension].append(file_path)
-                else:
-                    extensions[extension] = [file_path]
+        for resource in self.resources:
+            for current_path, subfolders, files in os.walk(resource):
+                print(files)
+                if not files:
+                    continue
+                for file in files:
+                    extension = os.path.splitext(file)[-1]
+                    file_path = os.path.join(current_path, file)
+                    if extension in extensions:
+                        extensions[extension].append(file_path)
+                    else:
+                        extensions[extension] = [file_path]
         return extensions
 
     def find_node(self, root: HashNode, name: str) -> HashNode:

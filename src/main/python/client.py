@@ -1,86 +1,76 @@
 import socket
-import ssl
+
+from OpenSSL import SSL
+
 
 class Client:
     """
-    The Client class facilitates communication with a server using a socket connection
-    over SSL.
+    Client for communication with an SSL-enabled server.
     """
 
-    def __init__(self, host: str, port: int, ssl_enabled: bool = True) -> None:
+    def __init__(self, host: str, port: int) -> None:
         """
-        Initializes a Client instance with the specified host, port, and SSL option.
-
-        Args:
-            host (str): Hostname or IP address of the server.
-            port (int): Port number for the connection.
-            ssl_enabled (bool): Whether to use SSL for the connection (default is True).
+        Initialize the client.
         """
         self.host = host
         self.port = port
-        self.ssl_enabled = ssl_enabled
         self.client_socket = None
+        self.context = self._create_ssl_context()
+
+    def _create_ssl_context(self) -> SSL.Context:
+        """
+        Create and configure an SSL context using PyOpenSSL.
+        """
+        context = SSL.Context(SSL.TLS_CLIENT_METHOD)
+        context.load_verify_locations("../ssl/fullchain.pem")
+        return context
 
     def connect(self) -> None:
         """
-        Establishes a connection to the server, optionally using SSL.
+        Establishes a connection to the server using SSL.
         """
-        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.client_socket.connect((self.host, self.port))
+        # raw_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # raw_socket.connect((self.host, self.port))
+        raw_socket = socket.create_connection((self.host, self.port))
 
-        if self.ssl_enabled:
-            context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
-            # You can use context.load_cert_chain() to provide the client's certificate if needed
-            self.client_socket = context.wrap_socket(self.client_socket, server_hostname=self.host)
+        self.client_socket = SSL.Connection(self.context, raw_socket)
+        self.client_socket.set_connect_state()
+        self.client_socket.do_handshake()
 
     def send_message(self, message: str) -> None:
         """
-        Sends a message to the connected server.
-
-        Args:
-            message (str): The message to be sent.
-
-        Raises:
-            ConnectionError: If the connection is not established.
+        Send a message to the server.
         """
         if not self.client_socket:
             raise ConnectionError("Connection not established. Call connect() first.")
 
-        try:
-            self.client_socket.sendall(message.encode())
-        except Exception:
-            pass
+        self.client_socket.sendall(message.encode())
 
     def receive_message(self) -> str:
         """
-        Receives a message from the connected server.
-
-        Returns:
-            str: The message received.
-
-        Raises:
-            ConnectionError: If the connection is not established.
+        Receive a message from the server.
         """
         if not self.client_socket:
             raise ConnectionError("Connection not established. Call connect() first.")
 
+        message = ""
         try:
-            message = ""
             while True:
                 data = self.client_socket.recv(1024).decode()
-                if data == "END":
+                if not data or data.endswith("END"):
                     break
-                message += data
-
-            return message
-        except Exception:
-            pass
-
-    def close(self) -> None:
-        """
-        Closes the connection with the server.
-        """
-        if self.client_socket:
-            self.client_socket.close()
+                if data:
+                    message += data
+        except SSL.Error as e:
+            print(f"SSL Error: {e}")
+        return message.strip("END")
 
 
+def close(self) -> None:
+    """
+    Close the connection.
+    """
+    if self.client_socket:
+        self.client_socket.shutdown()
+        self.client_socket.close()
+        self.client_socket = None

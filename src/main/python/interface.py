@@ -158,6 +158,7 @@ class InterfaceHIDS:
 
         self.client.send_message(f"file {file}")
         message = self.client.receive_message()
+        print(message)
 
         message = "Not Modified" if message == "False" else "Modified"
 
@@ -213,4 +214,5 @@ class InterfaceHIDS:
         content_label.configure(state=ctk.DISABLED)
 
 
-
+if __name__ == "__main__":
+    interface = InterfaceHIDS("localhost", 8080, use_ssl=True)

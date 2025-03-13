@@ -1,4 +1,5 @@
 import hashlib
+import os
 from configparser import ConfigParser
 from datetime import datetime
 
@@ -76,8 +77,8 @@ def get_hash(name: str, date_today: datetime) -> str:
 
     # Read the token from the configuration file
     config = ConfigParser()
-    config.read("config.ini")
-    token = config.get("HASHING", "token")
+    config.read("config_docker.ini")
+    token = os.getenv('TOKEN', 'default_token')
 
     # Calculate the MAC using the hash and token
     mac_value = calculate_mac(hash_value, token, day)

@@ -3,3 +3,5 @@ customtkinter==5.2.2
 neomodel==5.2.0
 schedule==1.2.1
 certbot-dns-standalone==1.2.1
+colorama~=0.4.6
+pyOpenSSL~=25.0.0

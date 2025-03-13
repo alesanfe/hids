@@ -1,11 +1,11 @@
 import concurrent.futures
 import os
 import socket
-import ssl
 import threading
 import time
-from typing import Callable
-
+from typing import Callable, List
+import OpenSSL
+from OpenSSL import SSL
 import schedule
 import select
 
@@ -17,55 +17,61 @@ from repository import Repository
 class Server:
     """
     This class implements a simple TCP server that listens for incoming connections
-    and sends back a response to any message it receives. The server also tracks the
-    number of messages it has received and returns that count in its response.
+    with SSL enabled using PyOpenSSL.
     """
 
-    def __init__(self, host: str, port: int, user: str, password: str) -> None:
+    def __init__(self, port: int, user: str, password: str, host_db: str,
+                 resources: List[str] = None) -> None:
         """
-        Initialize the server with the specified host and port.
-
-        Args:
-            host (str): The hostname or IP address to bind to.
-            port (int): The port number to listen on.
+        Initialize the server with the specified host, port, and SSL settings.
         """
-        self.host = host
         self.port = port
         self.server_socket = None
-        self.repository = Repository(user, password)
+        self.repository = Repository(user, password, host_db, resources)
+        self.context = self._create_ssl_context()
+
         self.repository.delete_all()
         self.repository.load_data()
+        self.resources = resources if resources is not None else []
+
+    def _create_ssl_context(self) -> SSL.Context:
+        """
+        Creates and configures an SSL context using PyOpenSSL.
+        """
+        cert_file = "../ssl/fullchain.pem"
+        key_file = "../ssl/privkey.pem"
+
+        context = SSL.Context(SSL.TLS_SERVER_METHOD)
+        context.use_certificate_file(cert_file)
+        context.use_privatekey_file(key_file)
+        return context
 
     def start(self) -> None:
         """
-        Start the server listening for incoming connections.
+        Start the server with SSL enabled, listening for incoming connections.
         """
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server_socket.bind((self.host, self.port))
-        self.server_socket.listen(5)  # Increased the number of connections in the queue
+        # self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.server_socket.bind(("0.0.0.0", self.port))
+        self.server_socket.listen(5)
 
-        # context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-        # context.load_cert_chain(certfile="../ssl/fullchain.pem", keyfile="../ssl/privkey.pem")
-        #self.server_socket = context.wrap_socket(self.server_socket, server_side=True)
-
-        print(f"Server listening on {self.host}:{self.port}")
+        print(f"Server listening on 0.0.0.0:{self.port}")
 
         load_logger()
-        threading.Thread(target=self.print_scheduler).start()
+        threading.Thread(target=self.print_scheduler, daemon=True).start()
 
-        # Execute self.repository.all_files() in the background every 10 seconds
         schedule.every(1).days.do(lambda: self.execute_non_blocking(self.repository.all_files))
         schedule.every(30).days.do(lambda: self.execute_non_blocking(compile_monthly_report_by_day))
 
         while True:
-            client_socket, _ = self.server_socket.accept()  # Accept incoming connection
-
-            # Handle communication with the client in a separate thread
-            threading.Thread(target=self.handle_client, args=(client_socket,)).start()
+            client_socket, _ = self.server_socket.accept()
+            ssl_client_socket = SSL.Connection(self.context, client_socket)
+            ssl_client_socket.set_accept_state()
+            threading.Thread(target=self.handle_client, args=(ssl_client_socket,), daemon=True).start()
 
     def print_scheduler(self) -> None:
         """
-        Print "hello" every second.
+        Run scheduled tasks.
         """
         while True:
             schedule.run_pending()
@@ -78,57 +84,43 @@ class Server:
         with concurrent.futures.ThreadPoolExecutor() as executor:
             executor.submit(func)
 
-    def handle_client(self, client_socket: socket) -> None:
+    def handle_client(self, client_socket) -> None:
         """
-        Handle an incoming client connection by sending a response to any messages it sends.
-
-        Args:
-            client_socket (socket): The socket for the incoming connection.
+        Handle an incoming client connection.
         """
         try:
             while True:
-                try:
-                    active, _, _ = select.select([client_socket], [], [], 1)
+                active, _, _ = select.select([client_socket], [], [], 1)
+                if not active:
+                    continue
 
-                    if len(active) == 0:
-                        continue
+                data = client_socket.recv(1024)
+                if not data:
+                    break
 
-                    data = client_socket.recv(1024)  # Receive data from the client
-                    if not data:
-                        break  # If no data, the client has closed the connection
+                received_message = data.decode()
+                message = self.actions(received_message)
 
-                    received_message = data.decode()
+                chunk_size = 512
+                for i in range(0, len(message), chunk_size):
+                    chunk = message[i:i + chunk_size]
+                    client_socket.sendall(chunk.encode("utf-8"))
 
-                    message = self.actions(received_message)
-
-                    chunk_size = 512
-                    for i in range(0, len(message), chunk_size):
-                        chunk = message[i:i + chunk_size]
-                        client_socket.sendall(chunk.encode("utf-8"))
-
-                    # Send the end indicator
-                    client_socket.sendall("END".encode("utf-8"))
-
-                except socket.timeout:
-                    pass  # Timeout reached, continue with the next cycle
-
-        except Exception:
-            pass
+                client_socket.sendall("END".encode("utf-8"))
+        except OpenSSL.SSL.Error as e:
+            print(f"SSL Error: {e}")
         finally:
+            client_socket.shutdown()
             client_socket.close()
 
     def actions(self, received_message: str) -> str:
         """
-        Process incoming messages and perform corresponding actions.
-
-        Args:
-            received_message (str): The received message.
-
-        Returns:
-            str: The response message.
+        Process incoming messages.
         """
         if received_message.startswith("all_files"):
-            message = "|".join([file for _, _, aux_files in os.walk("../resources") for file in aux_files if "." in file])
+            message = "|".join(
+                [file for resource in self.resources for _, _, aux_files in os.walk(resource) for file in aux_files if
+                 "." in file])
         elif received_message.startswith("all_logs"):
             message = "|".join(os.listdir("../logs"))
         elif received_message.startswith("all_reports"):
